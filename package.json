@@ -1,7 +1,8 @@
 {
-  "name": "angular-quickstart",
+  "name": "heuristic-search",
+  "private": true,
   "version": "1.0.0",
-  "description": "QuickStart package.json from the documentation, supplemented with testing support",
+  "description": "CS 440 Assignment 1 - Heuristic Search using Information from Many Heuristics",
   "scripts": {
     "start": "tsc && concurrently \"tsc -w\" \"lite-server\" ",
     "lint": "tslint ./app/**/*.ts -t verbose",
@@ -9,8 +10,12 @@
     "tsc": "tsc",
     "tsc:w": "tsc -w"
   },
+  "main": "./dist/js/main.js",
   "keywords": [],
   "author": "Cameron Pascal",
+  "contributors": [
+    "Ariel Shaposhnik"
+  ],
   "license": "MIT",
   "dependencies": {
     "@angular/common": "~2.4.0",
@@ -32,5 +37,8 @@
     "tslint": "^3.15.1",
     "typescript": "~2.0.10"
   },
-  "repository": {}
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/camtotheron/heuristic-search"
+  }
 }
