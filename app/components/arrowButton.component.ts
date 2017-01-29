@@ -4,8 +4,8 @@ import { Component, Input, Output, EventEmitter } from "@angular/core";
     selector: 'arrow-button',
     templateUrl: './app/templates/arrowButton.component.html',
     styles: [`
-        .arrowButtonContainer { width: 100%; height: 100% } 
-        .arrowButtonContainer svg:hover { fill: #808080 }
+        div { width: 100%; height: 100% } 
+        div :hover { fill: #808080 }
     `]
 })
 
