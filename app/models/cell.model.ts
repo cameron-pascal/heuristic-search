@@ -16,21 +16,22 @@ export class Cell {
     private neighborsHash: Array<Cell>;
     private _availableDirections: Array<Direction>;
     private _availableCardinalDirections: Array<Direction>;
-    private _isFast = false;
-    private _cellType: CellType = CellType.Unblocked; 
+    
+    cellType: CellType = CellType.Unblocked;
+    isFast = false;
 
     constructor() {
         const size = Direction.Down | Direction.Left | Direction.Right | Direction.Up;
         this._availableDirections = new Array<Direction>();
         this._availableCardinalDirections = new Array<Direction>();
-        this.neighborsHash = new Array<Cell>(size);
+        this.neighborsHash = new Array<Cell>();
         for (let i=0; i<size; i++) {
-            this.neighborsHash[i] = null;
+            this.neighborsHash.push(null);
         }
     }
 
     registerNeighbor(direction: Direction, neighbor: Cell) {
-        
+
         if (this.neighborsHash[direction] === null) {
             this._availableDirections.push(direction);
             switch (direction) {
@@ -47,9 +48,28 @@ export class Cell {
                     this._availableCardinalDirections.push(direction);
                     break;
             }
+        } 
+        this.neighborsHash[direction] = neighbor;
+    }
+
+    serialize() {
+        if (this.cellType === CellType.Blocked) {
+            return '0';
         }
 
-        this.neighborsHash[direction] = neighbor;
+        if (this.cellType === CellType.Unblocked) {
+            if (this.isFast) {
+                return 'a';
+            }
+
+            return '1';
+        }
+
+        if (this.isFast) {
+            return 'b';
+        }
+
+        return '2';
     }
 
     getNeigbor(direction: Direction) {
@@ -62,27 +82,5 @@ export class Cell {
 
     get availableCardinalDirections() {
         return this._availableCardinalDirections.slice();
-    }
-
-    get isFast() {
-        return this._isFast;
-    }
-
-    set isFast(isFast: boolean) {
-        if (this._cellType !== CellType.Blocked && isFast) {
-            this._isFast = isFast;
-        }
-    }
-
-    get cellType() {
-        return this._cellType;
-    }
-    
-    set cellType(cellType: CellType) {
-        if (cellType === CellType.Blocked) {
-            this._isFast = false;
-        }
-
-        this._cellType = cellType;
     }
 }

@@ -26,8 +26,20 @@ export class Grid {
         this.length = length;
     }
 
-    public getCell(row: number, col: number) {
+    getCell(row: number, col: number) {
         return this.grid[row][col];
+    }
+
+    serialize() {
+        let serializedData = '';
+        this.grid.forEach(row => {
+            row.forEach(cell => {
+                serializedData += cell.serialize();
+            });
+            serializedData += '\r\n';
+        });
+
+        return serializedData;
     }
 
     private constructGrid(rowCount: number, colCount: number) {
@@ -90,28 +102,33 @@ export class Grid {
 
         let cellPosition = this.getCellPosition(cellCoordinate, grid.length, grid[0].length);
 
+        let visitCount = 0;
         if (cellPosition === CellPosition.LeftTopCorner) {
             cell.registerNeighbor(Direction.Down, getNeighborBelow());
             cell.registerNeighbor(Direction.Right, getNeighborRight());
             cell.registerNeighbor(Direction.Down | Direction.Right, getNeighborBelowRight());
+            visitCount++
         }
 
         if (cellPosition === CellPosition.RightTopCorner) {
             cell.registerNeighbor(Direction.Down, getNeighborBelow());
             cell.registerNeighbor(Direction.Left, getNeighborLeft());
             cell.registerNeighbor(Direction.Down | Direction.Left, getNeighborBelowLeft());
+            visitCount++;
         }
 
         if (cellPosition === CellPosition.LeftBottomCorner) {
             cell.registerNeighbor(Direction.Up, getNeighborAbove());
             cell.registerNeighbor(Direction.Right, getNeighborRight());
             cell.registerNeighbor(Direction.Up | Direction.Right, getNeighborAboveRight());
+            visitCount++;
         }
 
         if (cellPosition === CellPosition.RightBottomCorner) {
             cell.registerNeighbor(Direction.Up, getNeighborAbove());
-            cell.registerNeighbor(Direction.Right, getNeighborRight());
+            cell.registerNeighbor(Direction.Left, getNeighborLeft());
             cell.registerNeighbor(Direction.Up | Direction.Left, getNeighborAboveLeft());
+            visitCount++;
         }
 
         if (cellPosition === CellPosition.TopEdge) {
@@ -120,6 +137,7 @@ export class Grid {
             cell.registerNeighbor(Direction.Down | Direction.Right, getNeighborBelowRight());
             cell.registerNeighbor(Direction.Left, getNeighborLeft());
             cell.registerNeighbor(Direction.Down | Direction.Left, getNeighborBelowLeft());
+            visitCount++;
         }
 
         if (cellPosition === CellPosition.BottomEdge) {
@@ -128,6 +146,7 @@ export class Grid {
             cell.registerNeighbor(Direction.Up | Direction.Right, getNeighborAboveRight());
             cell.registerNeighbor(Direction.Right, getNeighborRight());
             cell.registerNeighbor(Direction.Up | Direction.Left, getNeighborAboveLeft());
+            visitCount++;
         }
 
         if (cellPosition === CellPosition.LeftEdge) {
@@ -136,14 +155,16 @@ export class Grid {
             cell.registerNeighbor(Direction.Up | Direction.Right, getNeighborAboveRight());
             cell.registerNeighbor(Direction.Down | Direction.Right, getNeighborBelowRight());
             cell.registerNeighbor(Direction.Down, getNeighborBelow());
+            visitCount++;
         }
 
-        if (cellPosition === CellPosition.LeftEdge) {
+        if (cellPosition === CellPosition.RightEdge) {
             cell.registerNeighbor(Direction.Up, getNeighborAbove());
             cell.registerNeighbor(Direction.Left, getNeighborLeft());
             cell.registerNeighbor(Direction.Up | Direction.Left, getNeighborAboveLeft());
             cell.registerNeighbor(Direction.Down | Direction.Left, getNeighborBelowLeft());
             cell.registerNeighbor(Direction.Down, getNeighborBelow());
+            visitCount++;
         }
 
         if (cellPosition === CellPosition.Interior) {
@@ -155,8 +176,12 @@ export class Grid {
             cell.registerNeighbor(Direction.Right, getNeighborRight());
             cell.registerNeighbor(Direction.Up | Direction.Right, getNeighborAboveRight());
             cell.registerNeighbor(Direction.Down | Direction.Right, getNeighborBelowRight());
+            visitCount++;
         }
 
+        if (visitCount > 1) {
+            console.log(cell);
+        }
         return cell;
     } 
 

@@ -23,6 +23,8 @@ export class MainModule {
 
   constructor() {
     let grid = new Grid(this.gridLength, this.gridWidth);
+    let a = false;
     let gridInitializer = new GridInitializer(grid);
+    console.log(grid.serialize());
   }
 }
