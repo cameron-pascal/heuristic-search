@@ -25,7 +25,14 @@ class Rng {
     }
 }
 
+class CellInfo {
+
+    constructor(public cell: Cell, public coordinates: [number, number]) { }
+}
+
 export class GridInitializer {
+
+    public readonly hardRegionCenters: Array<[number, number]>;
 
     private readonly hardRegionDimensions: [number, number] = [31, 31];
     private readonly hardRegionCount = 8;
@@ -34,14 +41,91 @@ export class GridInitializer {
     private readonly pathLegLength = 20;
     private readonly maxPathCount = 4;
     private readonly blockedProb = 0.2;
+    private readonly startAndGoalRegionDimensions = [20, 20];
+    private readonly minStartAndGoalDistance = 100;
 
-    public readonly hardRegionCenters: Array<[number, number]>;
+    private availableStartAndGoalCellsMap: { [cellId: number]: CellInfo } = {};
+    private availableStartAndGoalCells: Array<CellInfo>;
+
+    private startCell: Cell;
+    private goalCell: Cell;
 
     constructor(grid: Grid) {
-
+        this.initializeStartAndGoalCells(grid);
         this.hardRegionCenters = this.populateHardRegions(grid, this.hardRegionCount, this.hardRegionDimensions);
         this.populateFastPaths(grid, this.maxPathCount, this.minPathLength, this.pathLegLength, this.pathTurnProb);
         this.populateBlockedCells(grid, this.blockedProb);
+        this.availableStartAndGoalCells = this.setStartAndGoalCellsRegion();
+    }
+
+    getNewStartAndGoalCells(): [Cell, Cell] {
+        
+        Rng.shuffleArray(this.availableStartAndGoalCells);
+
+        let startCell = this.availableStartAndGoalCells[0].cell;
+        let startCoordinates = this.availableStartAndGoalCells[0].coordinates;
+
+        let goalCell: Cell;
+        for (let i=1; i<this.availableStartAndGoalCells.length; i++) {
+             goalCell = this.availableStartAndGoalCells[i].cell;
+            let goalCoordinates = this.availableStartAndGoalCells[i].coordinates;
+
+            let distance = this.calculateEuclidianDistance(startCoordinates, goalCoordinates);
+
+            if (distance > this.minStartAndGoalDistance) {
+                console.log("goal: ", goalCoordinates);
+                console.log('\n');
+                console.log("start: ", startCoordinates);
+                break;
+            }
+        }
+        return [startCell, goalCell];
+    }
+
+    private calculateEuclidianDistance(a: [number, number], b: [number, number]) { // [y, x]
+        let x1 = a[1];
+        let x2 = b[1];
+
+        let y1 = a[0];
+        let y2 = b[0];
+
+        let xDelta = Math.abs(x1 - x2);
+        let yDelta = Math.abs(y1 - y2);
+
+        return Math.floor(Math.sqrt( (xDelta * xDelta) + (yDelta * yDelta) )); 
+    }
+
+    private setStartAndGoalCellsRegion() {
+        let availableCells = new Array<CellInfo>();
+        
+        for (let id in this.availableStartAndGoalCellsMap) {
+            let cellInfo = this.availableStartAndGoalCellsMap[id];
+
+            if (cellInfo !== null) {
+                availableCells.push(cellInfo);
+            }
+        }
+
+        return availableCells;
+    }
+
+    private initializeStartAndGoalCells(grid: Grid) {
+        let rowStop = this.startAndGoalRegionDimensions[0];
+        let colStop = this.startAndGoalRegionDimensions[1];
+
+        for (let row=0; row<=rowStop; row++) {
+            for (let col=0; col<=colStop; col++) {
+                let topLeftCell = grid.getCell(row, col);
+                let topRightCell = grid.getCell(row, grid.width - col - 1);
+                let bottomLeftCell = grid.getCell(grid.length - row - 1, col);
+                let bottomRightCell = grid.getCell(grid.length - row - 1, grid.width - col - 1);
+
+                this.availableStartAndGoalCellsMap[topLeftCell.id] = new CellInfo(topLeftCell, [row, col]);
+                this.availableStartAndGoalCellsMap[topRightCell.id] = new CellInfo(topRightCell, [row, grid.width - col - 1]);
+                this.availableStartAndGoalCellsMap[bottomLeftCell.id] = new CellInfo(bottomLeftCell, [grid.length - row - 1, col]);
+                this.availableStartAndGoalCellsMap[bottomRightCell.id] = new CellInfo(bottomRightCell, [grid.length - row - 1, grid.width - col - 1]);
+            }
+        }
     }
 
     private populateHardRegions(grid: Grid, regionCount: number, regionDimensions: [number, number]) {
@@ -175,7 +259,11 @@ export class GridInitializer {
         return grid.getCell(randomCoordinate[0], randomCoordinate[1]);
     }
 
-    private populateBlockedCells(grid: Grid, blockedProb: number) {      
+    private populateBlockedCells(grid: Grid, blockedProb: number) { 
+
+        let startAndGoalRegionRow = this.startAndGoalRegionDimensions[0];
+        let startAndGoalRegionCol = this.startAndGoalRegionDimensions[1];
+
         for (let row=0; row<grid.length; row++) {
             for (let col=0; col<grid.width; col++) {
                 let cell = grid.getCell(row, col);
@@ -186,6 +274,9 @@ export class GridInitializer {
                 
                 if (Math.random() <= blockedProb) {
                     cell.cellType = CellType.Blocked;
+                    if (row <= startAndGoalRegionRow - 1 && col <= startAndGoalRegionCol) {
+                        this.availableStartAndGoalCellsMap[cell.id] = null;
+                    }
                 }
             }
         }

@@ -26,6 +26,10 @@ export class Grid {
         this.length = length;
     }
 
+    getAllCells() {
+        return this.grid.slice();
+    }
+
     getCell(row: number, col: number) {
         return this.grid[row][col];
     }
@@ -44,12 +48,13 @@ export class Grid {
 
     private constructGrid(rowCount: number, colCount: number) {
         let grid = new Array<Array<Cell>>();
+        let count = 0;
         
         for (let rowIndex=0; rowIndex < rowCount; rowIndex++) {
             let row = new Array<Cell>();
             grid.push(row);
             for (let colIndex=0; colIndex < colCount; colIndex++) {
-                row.push(new Cell());
+                row.push(new Cell(count++));
             }
         }
 

@@ -16,11 +16,13 @@ export class Cell {
     private neighborsHash: Array<Cell>;
     private _availableDirections: Array<Direction>;
     private _availableCardinalDirections: Array<Direction>;
+    private _id: number;
     
     cellType: CellType = CellType.Unblocked;
     isFast = false;
 
-    constructor() {
+    constructor(id: number) {
+        this._id = id;
         const size = Direction.Down | Direction.Left | Direction.Right | Direction.Up;
         this._availableDirections = new Array<Direction>();
         this._availableCardinalDirections = new Array<Direction>();
@@ -82,5 +84,9 @@ export class Cell {
 
     get availableCardinalDirections() {
         return this._availableCardinalDirections.slice();
+    }
+
+    get id() {
+        return this._id;
     }
 }
