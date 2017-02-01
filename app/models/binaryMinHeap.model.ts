@@ -1,13 +1,23 @@
+import { PriorityQueue } from './priorityQueue.model';
+
 class HeapNode<T> {
     
     constructor(public readonly item: T, public readonly priority: number) { }
 }
 
-export class BinaryMinHeap<T> {
+export class BinaryMinHeap<T> implements PriorityQueue<T> {
 
-    private _nodes: HeapNode<T>[] = new Array<HeapNode<T>>();
+    private _nodes: Array<HeapNode<T>>;
+    private _nodeHash: { [key: number]: boolean } = {};
 
-    constructor() { }
+    constructor(private readonly _hashFunc: (item: T) => number, items?: Array<[T, number]>) {
+        if (items !== null) {
+            this._nodes = new Array<HeapNode<T>>(items.length);
+            this.buildHeap(items);
+        } else {
+            this._nodes = new Array<HeapNode<T>>();
+        }
+     }
 
     public get count() {
         return this._nodes.length;
@@ -16,6 +26,7 @@ export class BinaryMinHeap<T> {
     public push(item: T, priority: number) {
         if (item !== null || typeof item !== 'undefined') {
             this._nodes.push(new HeapNode<T>(item, priority));
+            this._nodeHash[this._hashFunc(item)] = true;
             this.upHeap(this._nodes.length - 1);
             return true;
         }
@@ -26,13 +37,34 @@ export class BinaryMinHeap<T> {
     public pop() {
         if (this._nodes.length > 0) {
             const root = this._nodes[0];
+            this._nodeHash[this._hashFunc(root.item)] = false;
             this._nodes[0] = this._nodes[this._nodes.length - 1];
-            this._nodes.splice(this._nodes.length-1, 1);
-            this.downHeap(0)
-            return root;
+            this._nodes.splice(this._nodes.length - 1, 1);
+            this.downHeap(0);
+            return root.item;
         }
 
         return null;
+    }
+
+    public contains(item: T) {
+        const result = this._nodeHash[this._hashFunc(item)];
+
+        if (typeof result === 'undefined') {
+            return false;
+        }
+
+        return result;
+    }
+
+    private buildHeap(items: Array<[T, number]>) {
+        for (let i = 0; i < items.length; i++) {
+            this._nodes[i] = new HeapNode(items[i][0], items[i][1]);
+        }
+
+        for (let i = Math.floor((items.length - 1) / 2); i <= 0; i--) {
+            this.upHeap(i);   
+        }
     }
 
     private downHeap(index: number) {

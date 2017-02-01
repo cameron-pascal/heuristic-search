@@ -1,3 +1,5 @@
+import { BinaryMinHeap } from './binaryMinHeap.model';
+
 export enum CellType {
     Unblocked = 1,
     Blocked = 1 << 1,
@@ -13,16 +15,17 @@ export enum Direction {
 
 export class Cell {
 
-    private neighborsHash: Array<Cell>;
+    private _neighborsHash: Array<Cell>;
     private _availableDirections: Array<Direction>;
     private _availableCardinalDirections: Array<Direction>;
-    private _id: number;
-    private neighborCosts: Array<number>;
-    
-     h: number; //cheapest possible to end
-     f: number; //g + h
-     g: number; //cost from path to start node
-     parent: Cell; //parent that the cell game from
+    private readonly _id: number;
+    private _neighborCosts: Array<number>;
+    private _priorityQueue: BinaryMinHeap<Cell>;
+
+    h: number; // cheapest possible to end
+    f: number; // g + h
+    g: number; // cost from path to start node
+    parent: Cell; // parent that the cell game from
 
     private weight: number;
     
@@ -33,14 +36,17 @@ export class Cell {
 
     constructor(id: number) {
         this._id = id;
+        
         const size = Direction.Down | Direction.Left | Direction.Right | Direction.Up;
+        
         this._availableDirections = new Array<Direction>();
         this._availableCardinalDirections = new Array<Direction>();
-        this.neighborsHash = new Array<Cell>();
-        this.neighborCosts = new Array<number>();
-        for (let i=0; i<=size; i++) {
-            this.neighborsHash.push(null);
-            this.neighborCosts.push(null);
+        this._neighborsHash = new Array<Cell>();
+        this._neighborCosts = new Array<number>();
+        
+        for (let i = 0; i <= size; i++) {
+            this._neighborsHash.push(null);
+            this._neighborCosts.push(null);
         }
 
         this.h = Infinity;
@@ -50,9 +56,9 @@ export class Cell {
         
     }
 
-    getAllCosts(){
-        let costs = new Array<number>();
-        this.neighborCosts.forEach(cost => {
+    getAllCosts() {
+        const costs = new Array<number>();
+        this._neighborCosts.forEach(cost => {
             if (cost === null) {
                 costs.push(cost);
             }
@@ -61,17 +67,28 @@ export class Cell {
         return costs;
     }
 
+    computeNeighborPriorityQueue() {
+         const neighborCostTuples = this._availableDirections.map(direction => {
+            const neighbor = this._neighborsHash[direction];
+            const cost = this._neighborCosts[direction];
+            const tuple: [Cell, number] = [neighbor, cost];
+            return tuple;
+        });
+
+       this._priorityQueue =  new BinaryMinHeap<Cell>(() => this._id, neighborCostTuples);
+    }
+
     getCost (direction: Direction){
-        return this.neighborCosts[direction];
+        return this._neighborCosts[direction];
     }
 
     registerCost(direction: Direction, cost: number) {
-        this.neighborCosts[direction] = cost;
+        this._neighborCosts[direction] = cost;
     }
 
     registerNeighbor(direction: Direction, neighbor: Cell) {
 
-        if (this.neighborsHash[direction] === null) {
+        if (this._neighborsHash[direction] === null) {
             this._availableDirections.push(direction);
             switch (direction) {
                 case Direction.Up:
@@ -89,7 +106,7 @@ export class Cell {
             }
         }
 
-        this.neighborsHash[direction] = neighbor;
+        this._neighborsHash[direction] = neighbor;
     }
 
     serialize() {
@@ -113,9 +130,12 @@ export class Cell {
     }
 
     getNeigbor(direction: Direction) {
-        return this.neighborsHash[direction];
+        return this._neighborsHash[direction];
     }
 
+    get neighborPriorityQueue() {
+        return this._priorityQueue;
+    }
 
     get availableDirections() {
         return this._availableDirections.slice();
