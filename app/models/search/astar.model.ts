@@ -25,19 +25,22 @@ export class search {
         // The set of nodes already evaluated.
         // The set of currently discovered nodes that are already evaluated.
         // Initially, only the start node is known.
+        this.start.parent = this.start;
+        this.start.g = 0;
+        this.start.f = this.start.h + this.start.g;
         this.openList.push(this.start);
         // For each node, which node it can most efficiently be reached from.
         // If a node can be reached from many nodes, cameFrom will eventually contain the
         // most efficient previous step.
         while (this.openList.length > 0){
             // Grab the lowest f(x) to process next
-			let lowInd = 0;
-			for(let i=0; i< this.openList.length; i++) {
-				if(this.openList[i].f < this.openList[lowInd].f) { 
-                    lowInd = i; 
-                }
-			}
-			let currentNode = this.openList[lowInd];
+		//	let lowInd = 0;
+		//	for(let i=0; i< this.openList.length; i++) {
+		//		if(this.openList[i].f < this.openList[lowInd].f) { 
+          //          lowInd = i; 
+            //    }
+		//	}
+			let currentNode = this.openList.pop();
  
 			// End case -- result has been found, return the traced path
 			if(currentNode == this.end) {
@@ -51,7 +54,7 @@ export class search {
 			}
 
             // Normal case -- move currentNode from open to closed, process each of its neighbors
-			this.openList.pop(); //!!!!!!
+			// this.openList.pop(); //!!!!!!
 			this.closedList.push(currentNode);
             
             let neighbors = new Array<[Direction, Cell]>();
@@ -86,6 +89,7 @@ export class search {
 				else if(gScore < neighbor[1].g) {
 					// We have already seen the node, but last time it had a worse g (distance from start)
 					gScoreIsBest = true;
+
 				}
  
 				if(gScoreIsBest) {
@@ -97,7 +101,7 @@ export class search {
 				}
 			}
  
-			// Normal case -- move currentNode from open to closed, process each of its neighbors
+	
         }
     }
 
