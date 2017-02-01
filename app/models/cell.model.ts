@@ -17,7 +17,16 @@ export class Cell {
     private _availableDirections: Array<Direction>;
     private _availableCardinalDirections: Array<Direction>;
     private _id: number;
+    private neighborCosts: Array<number>;
     
+     h: number; //cheapest possible to end
+     f: number; //g + h
+     g: number; //cost from path to start node
+     parent: Cell; //parent that the cell game from
+
+    private weight: number;
+    
+
     cellType: CellType = CellType.Unblocked;
     isFast = false;
 
@@ -29,7 +38,37 @@ export class Cell {
         this.neighborsHash = new Array<Cell>();
         for (let i=0; i<size; i++) {
             this.neighborsHash.push(null);
+            this.neighborCosts.push(null);
         }
+
+        this.h = Infinity;
+        this.f = null;
+        this.g = 0;
+        this.parent = null;
+        
+    }
+
+    incramentG(){
+
+    }
+
+    getAllCosts(){
+        let costs = new Array<number>();
+        this.neighborCosts.forEach(cost => {
+            if (cost === null) {
+                costs.push(cost);
+            }
+        });
+
+        return costs;
+    }
+
+    getCost (direction: Direction){
+        return this.neighborCosts[direction];
+    }
+
+    registerCost(direction: Direction, cost: number) {
+        this.neighborCosts[direction] = cost;
     }
 
     registerNeighbor(direction: Direction, neighbor: Cell) {
@@ -77,6 +116,7 @@ export class Cell {
     getNeigbor(direction: Direction) {
         return this.neighborsHash[direction];
     }
+
 
     get availableDirections() {
         return this._availableDirections.slice();
