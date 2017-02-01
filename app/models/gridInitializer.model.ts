@@ -152,81 +152,87 @@ export class GridInitializer {
     }
 
     private populateFastPaths(grid: Grid, pathLimit: number, minPathLength: number, legLength: number, turnProb: number) {
-        let paths = Array<Array<Cell>>();
-        let pathCount = 0;
+        let paths = new Array<Array<Cell>>();
         let tryLimit = ((2 * grid.length) + (2 * grid.width)) - 4;
-        let spinCount = 0;
-        while (pathCount < pathLimit) {
-
+        let edgeCoordinates = this.initializeEdgeCoordinates(grid);
+        
+        while (paths.length < pathLimit) {
             let path = new Array<Cell>();
             let tries = 0;
 
-            let shouldClear = false;
-            let startCell = this.getRandomEdgeCell(grid);
-            let direction = this.getRandomCardinalDirection(startCell);
-            let currentCell = startCell;
+            let currentCell = this.getRandomEdgeCell(grid, edgeCoordinates);
+            let direction = this.getRandomCardinalDirection(currentCell);
+            
+            if (currentCell.isFast) {
+                continue;
+            }
 
-            while(path.length < minPathLength) {
-                let count = 0;
-                while (currentCell !== null && count < legLength) {
-                    if (currentCell.isFast) {
-                        shouldClear = true;
+            currentCell.isFast = true;
+            path.push(currentCell);
+            currentCell = currentCell.getNeigbor(direction);
+
+            while (tries < tryLimit && currentCell != null) {
+
+                if (currentCell.isFast) {
+                    break;
+                }
+                
+                currentCell.isFast = true;
+                path.push(currentCell);
+
+                if (path.length % legLength === 0) {
+                    if (Math.random() > turnProb) {
+                        let shouldMovePositive = Rng.getRandomBool();
+                        if (direction === Direction.Up || direction === Direction.Down) {
+                            if (shouldMovePositive) {
+                                direction = Direction.Right
+                            } else {
+                                direction = Direction.Left;
+                            }
+                        } else {
+                            if (shouldMovePositive) {
+                                direction = Direction.Down
+                            } else {
+                                direction = Direction.Up;
+                            }
+                        }
+                    }
+                    currentCell = currentCell.getNeigbor(direction);
+                    
+                    if (currentCell === null || currentCell.isFast) {
                         break;
                     }
-
+                
                     currentCell.isFast = true;
                     path.push(currentCell);
-                    currentCell = currentCell.getNeigbor(direction);
-                    count++;
                 }
+                currentCell = currentCell.getNeigbor(direction);
+            }
 
-                if (count !== legLength) {
-                    shouldClear = true;
-                }
-
-                if (shouldClear) {
-                    tries++;
+            if (tries >= tryLimit) {
+                path.forEach(cell => {
+                    cell.isFast = false;
+                });
+                paths.forEach(path => {
                     path.forEach(cell => {
                         cell.isFast = false;
                     });
-                    path = new Array<Cell>();
-                    break;
-                }
-
-                if (tries >= tryLimit) {
-                    paths.forEach(p => {
-                        p.forEach(cell => {   
-                            cell.isFast = false;
-                        });  
-                    });
-                    paths = new Array<Array<Cell>>();
-                    pathCount = 0;
-                    shouldClear = true;
-                    break;
-                }
-
-                if (Math.random() > turnProb) {
-                    let shouldMovePositive = Rng.getRandomBool();
-                    if (direction === Direction.Up || direction === Direction.Down) {
-                        if (shouldMovePositive) {
-                            direction = Direction.Right
-                        } else {
-                            direction = Direction.Left;
-                        }
-                    } else {
-                        if (shouldMovePositive) {
-                            direction = Direction.Down
-                        } else {
-                            direction = Direction.Up;
-                        }
-                    }
-                }
-            }
-
-            if (!shouldClear) {
+                });
+                paths = new Array<Array<Cell>>();
+                tries = 0; 
+            } else if (currentCell != null) {
+                path.forEach(cell => {
+                    cell.isFast = false;
+                });
+                tries++;
+            } else if (path.length < minPathLength) {
+                path.forEach(cell => {
+                    cell.isFast = false;
+                });
+                tries++;
+            } else {
                 paths.push(path);
                 tries = 0;
-                pathCount++;
             }
         }
     }
@@ -238,8 +244,7 @@ export class GridInitializer {
         return directions[0];
     }
 
-    private getRandomEdgeCell(grid: Grid) {
-        // The idea here is that we unroll the edges into a flat array and then randomlly pick one.
+    private initializeEdgeCoordinates(grid: Grid) {
         let edgeCoordinates = new Array<[number, number]>();
 
         for (let col=0; col<grid.width; col++) {
@@ -251,7 +256,11 @@ export class GridInitializer {
             edgeCoordinates.push([row, 0]);
             edgeCoordinates.push([row, grid.width - 1]);
         }
-        
+
+        return edgeCoordinates;
+    }
+
+    private getRandomEdgeCell(grid: Grid, edgeCoordinates: Array<[number, number]>) {
         Rng.shuffleArray(edgeCoordinates);
 
         let randomCoordinate = edgeCoordinates[0];
