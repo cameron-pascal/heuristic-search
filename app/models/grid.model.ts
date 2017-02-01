@@ -147,7 +147,7 @@ export class Grid {
 
         if (cellPosition === CellPosition.BottomEdge) {
             cell.registerNeighbor(Direction.Up, getNeighborAbove());
-            cell.registerNeighbor(Direction.Right, getNeighborRight());
+            cell.registerNeighbor(Direction.Left, getNeighborLeft());
             cell.registerNeighbor(Direction.Up | Direction.Right, getNeighborAboveRight());
             cell.registerNeighbor(Direction.Right, getNeighborRight());
             cell.registerNeighbor(Direction.Up | Direction.Left, getNeighborAboveLeft());
