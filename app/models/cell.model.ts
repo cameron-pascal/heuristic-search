@@ -36,6 +36,7 @@ export class Cell {
         this._availableDirections = new Array<Direction>();
         this._availableCardinalDirections = new Array<Direction>();
         this.neighborsHash = new Array<Cell>();
+        this.neighborCosts = new Array<number>();
         for (let i=0; i<=size; i++) {
             this.neighborsHash.push(null);
             this.neighborCosts.push(null);
