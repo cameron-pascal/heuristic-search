@@ -67,7 +67,7 @@ export class search {
  
 			for(var i=0; i<neighbors.length;i++) {
 				let neighbor = neighbors[i];
-				if(this.closedList.indexOf(currentNode) === -1 || neighbor[1].cellType == CellType.Blocked) {
+				if(this.closedList.indexOf(currentNode) !== -1 || neighbor[1].cellType == CellType.Blocked) {
 					// not a valid node to process, skip to next neighbor
 					continue;
 				}

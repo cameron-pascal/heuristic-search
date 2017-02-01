@@ -2,7 +2,6 @@ import { Grid } from '../grid.model';
 import { Cell } from '../cell.model';
 import { Direction } from '../cell.model';
 import { CellType} from '../cell.model';
-import { BinaryHeap} from './BinaryHeap';
 
 export class path {
 
