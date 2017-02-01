@@ -30,7 +30,7 @@ class CellInfo {
     constructor(public cell: Cell, public coordinates: [number, number]) { }
 }
 
-export class GridInitializer {
+export class GridManager {
 
     public readonly hardRegionCenters: Array<[number, number]>;
 
@@ -43,6 +43,12 @@ export class GridInitializer {
     private readonly blockedProb = 0.2;
     private readonly startAndGoalRegionDimensions = [20, 20];
     private readonly minStartAndGoalDistance = 100;
+    private readonly perpendicularUnblockedCost = 1;
+    private readonly perpendicularPartiallyBlockedCost = 1;
+    private readonly perpendicularDifferentCost = 1.5;
+    private readonly diagonalUnblockedCost = Math.SQRT2;
+    private readonly diagonalPartiallyBlockedCost = Math.SQRT2 + Math.SQRT2; // sqrt(8) = 2 * sqrt(2)
+    private readonly diagonalDifferenCost = Math.SQRT2 * 1.5; // (sqrt(2) + sqrt(8)) /  2 = sqrt(2) * 1.5
 
     private availableStartAndGoalCellsMap: { [cellId: number]: CellInfo } = {};
     private availableStartAndGoalCells: Array<CellInfo>;
@@ -50,12 +56,81 @@ export class GridInitializer {
     private startCell: Cell;
     private goalCell: Cell;
 
+    private grid: Grid;
+
     constructor(grid: Grid) {
+        this.grid = grid;
+
         this.initializeStartAndGoalCells(grid);
         this.hardRegionCenters = this.populateHardRegions(grid, this.hardRegionCount, this.hardRegionDimensions);
         this.populateFastPaths(grid, this.maxPathCount, this.minPathLength, this.pathLegLength, this.pathTurnProb);
         this.populateBlockedCells(grid, this.blockedProb);
         this.availableStartAndGoalCells = this.setStartAndGoalCellsRegion();
+        this.calculateMovementCosts(grid);
+    }
+
+    private calculateMovementCosts(grid: Grid) {
+        for (let row=0; row < grid.length; row++) {
+            for (let col=0; col < grid.width; col++) {
+                let cell = grid.getCell(row, col);
+                this.calculateCost(cell);
+            }
+        }
+    }
+
+    private calculateCost(cell: Cell) {
+        cell.availableDirections.forEach(direction => {
+            let neighbor = cell.getNeigbor(direction);
+            
+            if (neighbor.cellType === CellType.Blocked) {
+                return;
+            }
+
+            let isNeighborSame = neighbor.cellType - cell.cellType === 0;
+            let isPerpendicular = this.isDirectionPerpendicular(direction);
+            let cost: number;
+            if (isPerpendicular) {
+                if (isNeighborSame) {
+                    if (cell.cellType === CellType.Unblocked) {
+                        cost = this.perpendicularUnblockedCost;
+                    } else {
+                        cost = this.perpendicularPartiallyBlockedCost;
+                    }
+                } else {
+                    cost = this.perpendicularDifferentCost;
+                }
+            } else {
+                if (isNeighborSame) {
+                    if (cell.cellType === CellType.Unblocked) {
+                        cost = this.diagonalUnblockedCost;
+                    } else {
+                        cost = this.diagonalPartiallyBlockedCost;
+                    }
+                } else {
+                    cost = this.diagonalDifferenCost;
+                }
+            }
+
+            if (neighbor.isFast) { 
+                cost = cost / 4;
+            }
+
+            cell.registerCost(direction, cost);
+        });
+    }
+
+    private isDirectionPerpendicular(direction: Direction) {
+        return direction > 0 && (direction & (direction - 1)) === 0; // check if direction is power of 2 i.e it only has one high bit.
+    }
+
+    private calculateDistances(grid: Grid, goalCoordinates: [number, number]) {
+        for (let row=0; row < grid.length; row++) {
+            for (let col=0; col < grid.width; col++) {
+                let cell = grid.getCell(row, col);
+                let distance = this.calculateEuclidianDistance([row, col], goalCoordinates);
+                cell.h = distance;
+            }
+        }
     }
 
     getNewStartAndGoalCells(): [Cell, Cell] {
@@ -66,9 +141,10 @@ export class GridInitializer {
         let startCoordinates = this.availableStartAndGoalCells[0].coordinates;
 
         let goalCell: Cell;
+        let goalCoordinates: [number, number];
         for (let i=1; i<this.availableStartAndGoalCells.length; i++) {
              goalCell = this.availableStartAndGoalCells[i].cell;
-            let goalCoordinates = this.availableStartAndGoalCells[i].coordinates;
+             goalCoordinates = this.availableStartAndGoalCells[i].coordinates;
 
             let distance = this.calculateEuclidianDistance(startCoordinates, goalCoordinates);
 
@@ -79,6 +155,8 @@ export class GridInitializer {
                 break;
             }
         }
+
+        this.calculateDistances(this.grid, goalCoordinates);
         return [startCell, goalCell];
     }
 

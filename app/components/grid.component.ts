@@ -19,6 +19,7 @@ export class GridComponent implements OnInit {
     
     @Input() gridModel: Grid;
     @Input() startAndGoalCellIds: [number, number];
+    @Input() path: Array<Cell>;
 
     private cellMap: Array<Cell>;
 
@@ -41,7 +42,7 @@ export class GridComponent implements OnInit {
         let canvas = this.displayCanvas.nativeElement as HTMLCanvasElement;
         let context = canvas.getContext('2d');
 
-        this.draw(cells, context);
+        this.draw(cells, context, this.path);
     }
 
     gridClicked(x: number, y: number) {
@@ -50,7 +51,7 @@ export class GridComponent implements OnInit {
         console.log("cell " + [row, col] +": ", this.gridModel.getCell(row, col));
     }
 
-    private draw(cells: Array<Array<Cell>>, context: CanvasRenderingContext2D) {
+    private draw(cells: Array<Array<Cell>>, context: CanvasRenderingContext2D, path: Array<Cell>) {
         
         let cellWidth = this.cellDimensions[1];
         let cellHeight = this.cellDimensions[0];
@@ -68,8 +69,10 @@ export class GridComponent implements OnInit {
 
                 context.beginPath();
                 context.rect(x, y, cellWidth, cellHeight);
-                
-                if (cell.id === this.startAndGoalCellIds[0]) {
+
+                if (path.indexOf(cell) >= 0) {
+                    context.fillStyle = 'brown';
+                } else if (cell.id === this.startAndGoalCellIds[0]) {
                     context.fillStyle = this.startColor;
                 } else if (cell.id === this.startAndGoalCellIds[1]) {
                     context.fillStyle = this.endColor;

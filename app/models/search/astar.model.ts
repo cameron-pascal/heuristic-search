@@ -10,7 +10,7 @@ export class search {
     private start: Cell;
     private end: Cell;
 
-     private openList: Array<Cell>; //Fringe
+    private openList: Array<Cell>; //Fringe
     private closedList: Array<Cell>;
 
     constructor(grid: Grid, start: Cell, end: Cell) {
@@ -21,7 +21,7 @@ export class search {
         this.closedList = new Array<Cell>();
     }
 
-    initiateSearch(){
+    initiateSearch() {
         // The set of nodes already evaluated.
         // The set of currently discovered nodes that are already evaluated.
         // Initially, only the start node is known.
@@ -67,7 +67,8 @@ export class search {
  
 			for(var i=0; i<neighbors.length;i++) {
 				let neighbor = neighbors[i];
-				if(this.closedList.indexOf(currentNode) === -1 || neighbor[1].cellType == CellType.Blocked) {
+
+				if(this.closedList.indexOf(neighbor[1]) != -1 || neighbor[1].cellType == CellType.Blocked) {
 					// not a valid node to process, skip to next neighbor
 					continue;
 				}
@@ -77,34 +78,38 @@ export class search {
 
 				let gScore = currentNode.g + currentNode.getCost(neighbor[0]); 
 				let gScoreIsBest = false;
+				let beenVisited = neighbor[1].visited;
  
+				//if(this.closedList.indexOf(currentNode))
  
-				if(this.openList.indexOf(neighbor[1]) == -1) {
+				/*if(this.openList.indexOf(neighbor[1]) == -1) {
 					// This the the first time we have arrived at this node, it must be the best
 					// Also, we need to take the h (heuristic) score since we haven't done so yet
 					gScoreIsBest = true;
 					//neighbor.h = astar.heuristic(neighbor.pos, end.pos);
 					this.openList.push(neighbor[1]);
-				}
-				else if(gScore < neighbor[1].g) {
+				}*/
+				if(!beenVisited  || gScore < neighbor[1].g) {
 					// We have already seen the node, but last time it had a worse g (distance from start)
 					gScoreIsBest = true;
+					neighbor[1].parent = currentNode;
+					neighbor[1].visited = true;
+					neighbor[1].g = gScore + neighbor[1].getCost(neighbor[0]);
+					neighbor[1].f = neighbor[1].g + neighbor[1].h;
+					console.log("neighbor : " , neighbor[1].id)
+					console.log("h : " , neighbor[1].h)
+					if(!beenVisited){
+						this.openList.push(neighbor[1])
+					} else {
+						let i = this.openList.indexOf(neighbor[1]);
+						this.openList.sort((a, b) => {
+							return a.f - b.f;
+						})
+					}
 
 				}
- 
-				if(gScoreIsBest) {
-					// Found an optimal (so far) path to this node.	 Store info on how we got here and
-					//	just how good it really is...
-					neighbor[1].parent = currentNode;
-					neighbor[1].g = gScore;
-					neighbor[1].f = neighbor[1].g + neighbor[1].h;
-				}
+
 			}
- 
-	
         }
     }
-
-    
-
 }

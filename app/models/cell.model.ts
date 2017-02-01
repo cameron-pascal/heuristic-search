@@ -1,7 +1,7 @@
 export enum CellType {
-    Unblocked,
-    Blocked,
-    PartiallyBlocked
+    Unblocked = 1,
+    Blocked = 1 << 1,
+    PartiallyBlocked = 1 << 2
 }
 
 export enum Direction {
@@ -29,6 +29,7 @@ export class Cell {
 
     cellType: CellType = CellType.Unblocked;
     isFast = false;
+    visited = false;
 
     constructor(id: number) {
         this._id = id;
@@ -86,7 +87,8 @@ export class Cell {
                     this._availableCardinalDirections.push(direction);
                     break;
             }
-        } 
+        }
+
         this.neighborsHash[direction] = neighbor;
     }
 
