@@ -49,10 +49,6 @@ export class Cell {
         
     }
 
-    incramentG(){
-
-    }
-
     getAllCosts(){
         let costs = new Array<number>();
         this.neighborCosts.forEach(cost => {
