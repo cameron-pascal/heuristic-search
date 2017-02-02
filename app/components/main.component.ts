@@ -3,10 +3,7 @@ import { Grid } from '../models/grid.model';
 import { GridManager } from '../models/gridManager.model';
 import { Cell } from '../models/cell.model';
 import { search } from '../models/search/astar.model';
-<<<<<<< HEAD
 import { BinaryMinHeap } from '../models/binaryMinHeap.model';
-=======
->>>>>>> 09f14f3e6dbc6bbee90a616ceb7584036469a78e
 
 @Component({
   selector: 'main-container',
@@ -33,7 +30,6 @@ export class MainComponent  {
   constructor() {
     this.grid = new Grid(this.gridLength, this.gridWidth);
     let gridManager = new GridManager(this.grid);
-<<<<<<< HEAD
     //console.log(this.grid.serialize());
     this.startAndGoalCells = gridManager.getNewStartAndGoalCells();
     //let s = new search(this.grid, this.startAndGoalCells[0], this.startAndGoalCells[1]);

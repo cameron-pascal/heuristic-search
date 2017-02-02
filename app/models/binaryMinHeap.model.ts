@@ -26,11 +26,7 @@ export class BinaryMinHeap<T> implements PriorityQueue<T> {
     public push(item: T, priority: number) {
         if (item !== null || typeof item !== 'undefined') {
             this._nodes.push(new HeapNode<T>(item, priority));
-<<<<<<< HEAD
-            //this._nodeHash[this._hashFunc(item)] = true;
-=======
             this._nodeHash[this._hashFunc(item)] = true;
->>>>>>> 09f14f3e6dbc6bbee90a616ceb7584036469a78e
             this.upHeap(this._nodes.length - 1);
             return true;
         }
@@ -39,7 +35,6 @@ export class BinaryMinHeap<T> implements PriorityQueue<T> {
     }
 
     public pop() {
-<<<<<<< HEAD
         const result = this._nodes[0];
         const largest = this._nodes.pop();
 
@@ -49,18 +44,6 @@ export class BinaryMinHeap<T> implements PriorityQueue<T> {
         }
 
         return result.item;
-=======
-        if (this._nodes.length > 0) {
-            const root = this._nodes[0];
-            this._nodeHash[this._hashFunc(root.item)] = false;
-            this._nodes[0] = this._nodes[this._nodes.length - 1];
-            this._nodes.splice(this._nodes.length - 1, 1);
-            this.downHeap(0);
-            return root.item;
-        }
-
-        return null;
->>>>>>> 09f14f3e6dbc6bbee90a616ceb7584036469a78e
     }
 
     public contains(item: T) {
@@ -75,7 +58,6 @@ export class BinaryMinHeap<T> implements PriorityQueue<T> {
 
     private buildHeap(items: Array<[T, number]>) {
         for (let i = 0; i < items.length; i++) {
-<<<<<<< HEAD
             const item = items[i][0];
             const priority = items[i][1];
             const hashCode = this._hashFunc(item);
@@ -84,19 +66,11 @@ export class BinaryMinHeap<T> implements PriorityQueue<T> {
         }
 
         for (let i = Math.floor(items.length / 2); i >= 0; i--) {
-            this.downHeap(i);   
-=======
-            this._nodes[i] = new HeapNode(items[i][0], items[i][1]);
-        }
-
-        for (let i = Math.floor((items.length - 1) / 2); i <= 0; i--) {
-            this.upHeap(i);   
->>>>>>> 09f14f3e6dbc6bbee90a616ceb7584036469a78e
+            this.downHeap(i);
         }
     }
 
     private downHeap(index: number) {
-<<<<<<< HEAD
         const leftChildIndex = this.getLeftChildIndex(index);
         const rightChildIndex = this.getRightChildIndex(index);
         let minChildIndex = index;
@@ -112,16 +86,6 @@ export class BinaryMinHeap<T> implements PriorityQueue<T> {
         if (minChildIndex !== index) {
             this.swap(minChildIndex, index);
             this.downHeap(minChildIndex);
-=======
-        if (index < this._nodes.length) {
-            let minChildIndex = this.getMinChildIndex(index);
-
-            while (minChildIndex >= 0 && this._nodes[minChildIndex] > this._nodes[index]) {
-                this.swap(index, minChildIndex);
-                index = minChildIndex;
-                minChildIndex = this.getMinChildIndex(index);
-            }
->>>>>>> 09f14f3e6dbc6bbee90a616ceb7584036469a78e
         }
     }
     
@@ -137,32 +101,7 @@ export class BinaryMinHeap<T> implements PriorityQueue<T> {
             }
         }
     }
-
-<<<<<<< HEAD
-=======
-    private getMinChildIndex(index: number) {
-        const leftChildIndex = this.getLeftChildIndex(index);
-        const rightChildIndex = this.getRightChildIndex(index);
-
-        if (rightChildIndex >= this._nodes.length) {
-            if (leftChildIndex >= this._nodes.length) {
-                return -1;
-            }
-
-            return leftChildIndex;
-        }
-
-        const leftChild = this._nodes[leftChildIndex];
-        const rightChild = this._nodes[rightChildIndex];
-
-        if (leftChild.priority < rightChild.priority) {
-            return leftChildIndex;
-        }
-
-        return rightChildIndex;
-    }
-
->>>>>>> 09f14f3e6dbc6bbee90a616ceb7584036469a78e
+    
     private getLeftChildIndex(index: number) {
         return (2 * index) + 1;
     }
