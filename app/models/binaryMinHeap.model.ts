@@ -43,7 +43,7 @@ export class BinaryMinHeap<T> implements PriorityQueue<T> {
             this.downHeap(0);
         }
 
-        return result;
+        return result.item;
     }
 
     public contains(item: T) {
