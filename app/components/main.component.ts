@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 import { Grid } from '../models/grid.model';
-import { GridInitializer } from '../models/gridInitializer.model';
+import { GridManager } from '../models/gridManager.model';
 import { Cell } from '../models/cell.model';
+import { search } from '../models/search/astar.model';
 
 @Component({
   selector: 'main-container',
@@ -23,12 +24,15 @@ export class MainComponent  {
 
   grid: Grid;
   startAndGoalCells: [Cell, Cell];
-  
+  path: Array<Cell>;
+
   constructor() {
     this.grid = new Grid(this.gridLength, this.gridWidth);
-    let gridInitializer = new GridInitializer(this.grid);
+    let gridManager = new GridManager(this.grid);
     console.log(this.grid.serialize());
-    this.startAndGoalCells = gridInitializer.getNewStartAndGoalCells()
+    this.startAndGoalCells = gridManager.getNewStartAndGoalCells();
+    let s = new search(this.grid, this.startAndGoalCells[0], this.startAndGoalCells[1]);
+    this.path = s.initiateSearch();
     console.log();
   } 
    

@@ -3,6 +3,7 @@ import { Cell } from '../cell.model';
 import { Direction } from '../cell.model';
 import { CellType} from '../cell.model';
 
+
 export class path {
 
     private cell: Cell;
