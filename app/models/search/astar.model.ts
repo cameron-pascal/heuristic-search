@@ -101,7 +101,7 @@ export class search {
 					gScoreIsBest = true;
 					neighbor[1].parent = currentNode;
 					neighbor[1].visited = true;
-					neighbor[1].g = gScore + neighbor[1].getCost(neighbor[0]);
+					neighbor[1].g = gScore;
 					neighbor[1].f = neighbor[1].g + neighbor[1].h;
 					console.log("neighbor : " , neighbor[1].id)
 					console.log("h : " , neighbor[1].h)
