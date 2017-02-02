@@ -2,6 +2,7 @@ import { Grid } from '../grid.model';
 import { Cell } from '../cell.model';
 import { Direction } from '../cell.model';
 import { CellType} from '../cell.model';
+import { BinaryMinHeap} from '../binaryMinHeap.model';
 
 
 export class search {
@@ -13,12 +14,18 @@ export class search {
     private openList: Array<Cell>; //Fringe
     private closedList: Array<Cell>;
 
+	private openHeap: BinaryMinHeap<Cell>;
+	private closedHeap: BinaryMinHeap<Cell>;
+
     constructor(grid: Grid, start: Cell, end: Cell) {
         this.grid = grid;
         this.start = start;
         this.end = end;
         this.openList = new Array<Cell>();
         this.closedList = new Array<Cell>();
+
+		this.openHeap = new BinaryMinHeap<Cell>(cell => cell.id);
+		this.closedHeap = new BinaryMinHeap<Cell>(cell => cell.id);
     }
 
     initiateSearch() {
@@ -28,11 +35,11 @@ export class search {
         this.start.parent = this.start;
         this.start.g = 0;
         this.start.f = this.start.h + this.start.g;
-        this.openList.push(this.start);
+        this.openHeap.push(this.start, this.start.g);
         // For each node, which node it can most efficiently be reached from.
         // If a node can be reached from many nodes, cameFrom will eventually contain the
         // most efficient previous step.
-        while (this.openList.length > 0){
+        while (this.openHeap.count > 0){
             // Grab the lowest f(x) to process next
 		//	let lowInd = 0;
 		//	for(let i=0; i< this.openList.length; i++) {
@@ -40,7 +47,7 @@ export class search {
           //          lowInd = i; 
             //    }
 		//	}
-			let currentNode = this.openList.pop();
+			let currentNode = this.openHeap.pop();
  
 			// End case -- result has been found, return the traced path
 			if(currentNode == this.end) {
@@ -55,7 +62,7 @@ export class search {
 
             // Normal case -- move currentNode from open to closed, process each of its neighbors
 			// this.openList.pop(); //!!!!!!
-			this.closedList.push(currentNode);
+			this.closedHeap.push(currentNode, currentNode.g);
             
             let neighbors = new Array<[Direction, Cell]>();
             let availableDirections = currentNode.availableDirections;
@@ -68,7 +75,7 @@ export class search {
 			for(var i=0; i<neighbors.length;i++) {
 				let neighbor = neighbors[i];
 
-				if(this.closedList.indexOf(neighbor[1]) != -1 || neighbor[1].cellType == CellType.Blocked) {
+				if(this.closedHeap.contains(neighbor[1]) || neighbor[1].cellType == CellType.Blocked) {
 					// not a valid node to process, skip to next neighbor
 					continue;
 				}
@@ -94,21 +101,15 @@ export class search {
 					gScoreIsBest = true;
 					neighbor[1].parent = currentNode;
 					neighbor[1].visited = true;
-					neighbor[1].g = gScore + neighbor[1].getCost(neighbor[0]);
+
+					neighbor[1].g = gScore;
 					neighbor[1].f = neighbor[1].g + neighbor[1].h;
 					console.log("neighbor : " , neighbor[1].id)
 					console.log("h : " , neighbor[1].h)
 					if(!beenVisited){
-						this.openList.push(neighbor[1])
-					} else {
-						let i = this.openList.indexOf(neighbor[1]);
-						this.openList.sort((a, b) => {
-							return a.f - b.f;
-						})
-					}
-
+						this.openHeap.push(neighbor[1], neighbor[1].g)
+					} 
 				}
-
 			}
         }
     }

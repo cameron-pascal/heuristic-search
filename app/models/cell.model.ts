@@ -94,9 +94,6 @@ export class Cell {
 
     registerCost(direction: Direction, cost: number) {
         this._neighborCosts[direction] = cost;
-        if (cost === null) {
-            debugger;
-        }
     }
 
     registerNeighbor(direction: Direction, neighbor: Cell) {
