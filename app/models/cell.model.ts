@@ -56,6 +56,14 @@ export class Cell {
         
     }
 
+    printCosts() {
+        this._availableDirections.forEach(direction => {
+            const neighbor = this._neighborsHash[direction];
+            const cost = this._neighborCosts[direction];
+            console.log([direction, cost, neighbor.id]);
+        });
+    }
+
     getAllCosts() {
         const costs = new Array<number>();
         this._neighborCosts.forEach(cost => {
@@ -68,11 +76,13 @@ export class Cell {
     }
 
     computeNeighborPriorityQueue() {
-         const neighborCostTuples = this._availableDirections.map(direction => {
+         let neighborCostTuples = new Array<[Cell, number]>();
+
+         this._availableDirections.forEach(direction => {
             const neighbor = this._neighborsHash[direction];
             const cost = this._neighborCosts[direction];
             const tuple: [Cell, number] = [neighbor, cost];
-            return tuple;
+            neighborCostTuples.push(tuple);
         });
 
        this._priorityQueue =  new BinaryMinHeap<Cell>(() => this._id, neighborCostTuples);
@@ -84,6 +94,9 @@ export class Cell {
 
     registerCost(direction: Direction, cost: number) {
         this._neighborCosts[direction] = cost;
+        if (cost === null) {
+            debugger;
+        }
     }
 
     registerNeighbor(direction: Direction, neighbor: Cell) {

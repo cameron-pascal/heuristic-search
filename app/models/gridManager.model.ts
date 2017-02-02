@@ -89,6 +89,7 @@ export class GridManager {
         cell.availableDirections.forEach(direction => {
             let neighbor = cell.getNeigbor(direction);
             if (neighbor.cellType === CellType.Blocked) {
+                cell.registerCost(direction, Infinity);
                 return;
             }
 
