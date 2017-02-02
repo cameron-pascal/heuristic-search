@@ -32,21 +32,6 @@ export class MainComponent  {
     let gridManager = new GridManager(this.grid);
     //console.log(this.grid.serialize());
     this.startAndGoalCells = gridManager.getNewStartAndGoalCells();
-    //let s = new search(this.grid, this.startAndGoalCells[0], this.startAndGoalCells[1]);
-    //this.path = s.initiateSearch();
-    console.log(this.startAndGoalCells[0]);
-    console.log(this.startAndGoalCells[0].printCosts());
-    //console.log(this.startAndGoalCells[1]);
-    const heap = this.startAndGoalCells[0].neighborPriorityQueue;
-    heap.push(new Cell(8008135), 5);
-    heap.push(new Cell(8008136), 0.000000000000001);
-    console.log(heap);
-
-    while(heap.count > 0) {
-      console.log(heap.pop());
-    }
-    console.log(this.grid.serialize());
-    this.startAndGoalCells = gridManager.getNewStartAndGoalCells();
     let s = new search(this.grid, this.startAndGoalCells[0], this.startAndGoalCells[1]);
     this.path = s.initiateSearch();
     console.log();

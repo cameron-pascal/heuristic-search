@@ -11,7 +11,7 @@ export class BinaryMinHeap<T> implements PriorityQueue<T> {
     private _nodeHash: { [key: number]: boolean } = {};
 
     constructor(private readonly _hashFunc: (item: T) => number, items?: Array<[T, number]>) {
-        if (items !== null) {
+        if (items !== null && typeof items !== 'undefined') {
             this._nodes = new Array<HeapNode<T>>(items.length);
             this.buildHeap(items);
         } else {

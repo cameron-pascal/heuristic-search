@@ -72,6 +72,9 @@ export class GridComponent implements OnInit {
 
                 if (path.indexOf(cell) >= 0) {
                     context.fillStyle = 'brown';
+                    if (cell.isFast) {
+                        context.fillStyle = 'yellow';
+                    }
                 } else if (cell.id === this.startAndGoalCellIds[0]) {
                     context.fillStyle = this.startColor;
                 } else if (cell.id === this.startAndGoalCellIds[1]) {

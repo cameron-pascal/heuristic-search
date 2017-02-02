@@ -28,6 +28,57 @@ export class search {
 		this.closedHeap = new BinaryMinHeap<Cell>(cell => cell.id);
     }
 
+	doSearch(){
+		this.start.g = 0;
+		this.start.parent = this.start;
+		this.openHeap.push(this.start, this.start.g);
+		while (this.openHeap.count > 0){
+			let currentNode = this.openHeap.pop();
+			if (currentNode = this.end){
+			let curr = currentNode;
+			let ret = new Array<Cell>();
+			while(curr.parent) {
+				ret.push(curr);
+				curr = curr.parent;
+				}
+				return ret.reverse();
+			}
+			this.closedList.push(currentNode);
+
+			let neighbors = new Array<[Direction, Cell]>();
+            let availableDirections = currentNode.availableDirections;
+		        
+            for (let Direction of availableDirections){
+	                neighbors.push([Direction, currentNode.getNeigbor(Direction)]);
+            	}
+			for(var i=0; i<neighbors.length;i++) {
+				let neighbor = neighbors[i];
+				if (this.closedList.indexOf(neighbor[1]) === -1){
+				if (this.openHeap.contains(neighbor[1])){
+				neighbor[1].g = Infinity;
+				neighbor[1].parent = null;
+			}
+			this.UpdateVertex(currentNode, neighbor);
+		}		
+
+		}
+
+	}
+}
+
+	UpdateVertex(node: Cell, neighbor: [Direction, Cell]){
+		let gcost = node.g + node.getCost(neighbor[0]);
+		if (gcost < neighbor[1].g){
+			neighbor[1].g = gcost;
+			neighbor[1].parent = node;
+		if (this.openHeap.contains(neighbor[1])){
+			//this.openHeap.remove; 
+		}
+		this.openHeap.push(neighbor[1], neighbor[1].g + neighbor[1].h);
+
+		}
+	}
+
     initiateSearch() {
         // The set of nodes already evaluated.
         // The set of currently discovered nodes that are already evaluated.
@@ -35,7 +86,7 @@ export class search {
         this.start.parent = this.start;
         this.start.g = 0;
         this.start.f = this.start.h + this.start.g;
-        this.openHeap.push(this.start, this.start.g);
+		this.openHeap.push(this.start, this.start.g);
         // For each node, which node it can most efficiently be reached from.
         // If a node can be reached from many nodes, cameFrom will eventually contain the
         // most efficient previous step.
@@ -53,7 +104,7 @@ export class search {
 			if(currentNode == this.end) {
 				let curr = currentNode;
 				let ret = new Array<Cell>();
-				while(curr.parent) {
+				while(curr.parent !== curr) {
 					ret.push(curr);
 					curr = curr.parent;
 				}
@@ -62,7 +113,7 @@ export class search {
 
             // Normal case -- move currentNode from open to closed, process each of its neighbors
 			// this.openList.pop(); //!!!!!!
-			this.closedHeap.push(currentNode, currentNode.g);
+			this.closedList.push(currentNode);
             
             let neighbors = new Array<[Direction, Cell]>();
             let availableDirections = currentNode.availableDirections;
@@ -75,14 +126,12 @@ export class search {
 			for(var i=0; i<neighbors.length;i++) {
 				let neighbor = neighbors[i];
 
-				if(this.closedHeap.contains(neighbor[1]) || neighbor[1].cellType == CellType.Blocked) {
-					// not a valid node to process, skip to next neighbor
-					continue;
-				}
- 
 				// g score is the shortest distance from start to current node, we need to check if
 				//	 the path we have arrived at this neighbor is the shortest one we have seen yet
 
+				if(this.closedList.indexOf(neighbor[1]) >= 0){
+					continue;
+				}
 				let gScore = currentNode.g + currentNode.getCost(neighbor[0]); 
 				let gScoreIsBest = false;
 				let beenVisited = neighbor[1].visited;
@@ -96,7 +145,7 @@ export class search {
 					//neighbor.h = astar.heuristic(neighbor.pos, end.pos);
 					this.openList.push(neighbor[1]);
 				}*/
-				if(!beenVisited  || gScore < neighbor[1].g) {
+				if(!beenVisited || gScore < neighbor[1].g) {
 					// We have already seen the node, but last time it had a worse g (distance from start)
 					gScoreIsBest = true;
 					neighbor[1].parent = currentNode;
