@@ -6,12 +6,13 @@ import { ArrowButtonComponent } from '../components/arrowButton.component';
 import { IndexSelectorComponent } from '../components/indexSelector.component';
 import { RangeInputBoxComponent } from '../components/rangeInputBox.component';
 import { GridComponent } from '../components/grid.component';
+import { CellInfoComponent } from '../components/cellInfo.component';
 
 import { RotationDirective } from '../directives/rotationAngle.directive';
 
 @NgModule({
   imports:      [ BrowserModule, FormsModule ],
-  declarations: [ MainComponent, ArrowButtonComponent, IndexSelectorComponent, RangeInputBoxComponent, RotationDirective, GridComponent ],
+  declarations: [ MainComponent, ArrowButtonComponent, IndexSelectorComponent, CellInfoComponent, RangeInputBoxComponent, RotationDirective, GridComponent ],
   bootstrap:    [ MainComponent ]
 })
 

@@ -15,7 +15,7 @@ export class SearchManagerService {
     private readonly gridWidth = 160;
     private readonly gridLength = 120;
     private readonly gridCount = 5;
-    private readonly searchesPerGrid = 1;
+    private readonly searchesPerGrid = 10;
     
     readonly searchIndexStart = 0;
 

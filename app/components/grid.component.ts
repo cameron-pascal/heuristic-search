@@ -18,7 +18,8 @@ export class GridComponent implements OnInit {
     
     @ViewChild('displayCanvas') displayCanvas: ElementRef;
 
-    @Output() cellClicked: EventEmitter<Cell>;
+    @Output() clickedCellChange = new EventEmitter<Cell>();
+    @Input() clickedCell: Cell;
 
     private readonly cellDimensions = [10, 10];
     private readonly gridLineColor = "#000000";
@@ -42,16 +43,25 @@ export class GridComponent implements OnInit {
             this.searchResult = searchResult;
             context.clearRect(0, 0, this.displayCanvas.nativeElement.width, this.displayCanvas.nativeElement.height);
             this.draw(searchResult, context);
+            this.clickedCell = searchResult.startAndGoalCells[0];
+            this.clickedCellChange.emit(this.clickedCell);
         });
     }
 
-    gridClicked(x: number, y: number) {
+    gridClicked(clientX: number, clientY: number) {
+        const canvas = this.displayCanvas.nativeElement as HTMLCanvasElement;
+        const rect = canvas.getBoundingClientRect();
+
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+
         const col = Math.floor(x / this.cellDimensions[0]);
         const row = Math.floor(y / this.cellDimensions[1]);
 
         const cell = this.searchResult.grid.getCell(row, col);
 
-        this.cellClicked.emit(cell);
+        this.clickedCell = cell;
+        this.clickedCellChange.emit(cell);
     }
 
     private draw(searchResult: SearchResult, context: CanvasRenderingContext2D) {

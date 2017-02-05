@@ -20,7 +20,6 @@ export class Cell {
     private _availableCardinalDirections: Array<Direction>;
     private readonly _id: number;
     private _neighborCosts: Array<number>;
-    private _priorityQueue: BinaryMinHeap<Cell>;
 
     h: number; // cheapest possible to end
     f: number; // g + h
@@ -65,19 +64,6 @@ export class Cell {
         });
 
         return costs;
-    }
-
-    computeNeighborPriorityQueue() {
-         let neighborCostTuples = new Array<[Cell, number]>();
-
-         this._availableDirections.forEach(direction => {
-            const neighbor = this._neighborsHash[direction];
-            const cost = this._neighborCosts[direction];
-            const tuple: [Cell, number] = [neighbor, cost];
-            neighborCostTuples.push(tuple);
-        });
-
-       this._priorityQueue =  new BinaryMinHeap<Cell>(() => this._id, neighborCostTuples);
     }
 
     getCost (direction: Direction){
@@ -133,10 +119,6 @@ export class Cell {
 
     getNeigbor(direction: Direction) {
         return this._neighborsHash[direction];
-    }
-
-    get neighborPriorityQueue() {
-        return this._priorityQueue;
     }
 
     get availableDirections() {

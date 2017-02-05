@@ -76,13 +76,6 @@ export class GridManager {
                 this.calculateCost(cell);
             }
         }
-
-        for (let row = 0; row < grid.length; row++) {
-            for (let col = 0; col < grid.width; col++) {
-                let cell = grid.getCell(row, col);
-                cell.computeNeighborPriorityQueue();
-            }
-        }
     }
 
     private calculateCost(cell: Cell) {

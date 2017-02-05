@@ -1,2 +1,5 @@
-<index-selector></index-selector>
-<grid></grid>
+<div id="header">
+    <index-selector></index-selector>
+    <cell-info [(cell)] = "currentCell"></cell-info>
+</div>
+<grid #resultGrid [(clickedCell)] = "currentCell"></grid>
