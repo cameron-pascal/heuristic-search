@@ -183,10 +183,6 @@ export class Grid {
             cell.registerNeighbor(Direction.Down | Direction.Right, getNeighborBelowRight());
             visitCount++;
         }
-
-        if (visitCount > 1) {
-            console.log(cell);
-        }
         return cell;
     } 
 

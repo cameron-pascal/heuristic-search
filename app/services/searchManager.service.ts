@@ -29,7 +29,6 @@ export class SearchManagerService {
             const grid = new Grid(this.gridLength, this.gridWidth);
             const gridManager = new GridManager(grid);
             for (let j = 0; j < this.searchesPerGrid; j++) {
-                console.log("running search");
                 const startAndGoalPair = gridManager.getNewStartAndGoalCells();
                 const search = new Search(grid, startAndGoalPair[0], startAndGoalPair[1]);
                 const result = search.initiateSearch(SearchType.AStar);
@@ -45,7 +44,6 @@ export class SearchManagerService {
     }
 
     setCurrentSearchResult(index: number) {
-        console.log('set to ' + index);
         this._currentSearchSource.next(this._searches[index]);
     }
 }

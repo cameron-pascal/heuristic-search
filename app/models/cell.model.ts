@@ -56,14 +56,6 @@ export class Cell {
         
     }
 
-    printCosts() {
-        this._availableDirections.forEach(direction => {
-            const neighbor = this._neighborsHash[direction];
-            const cost = this._neighborCosts[direction];
-            console.log([direction, cost, neighbor.id]);
-        });
-    }
-
     getAllCosts() {
         const costs = new Array<number>();
         this._neighborCosts.forEach(cost => {

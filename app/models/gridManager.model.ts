@@ -155,9 +155,6 @@ export class GridManager {
             let distance = this.calculateEuclidianDistance(startCoordinates, goalCoordinates);
 
             if (distance > this.minStartAndGoalDistance) {
-                console.log('goal: ', goalCoordinates);
-                console.log('\n');
-                console.log('start: ', startCoordinates);
                 break;
             }
         }
