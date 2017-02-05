@@ -16,7 +16,6 @@ export class ArrowButtonComponent {
     @Output() onClicked: EventEmitter<any> = new EventEmitter();
 
     notifyClicked() {
-        this.onClicked.emit('clicked!');
-        console.log(this.orientationAngle);
+        this.onClicked.emit();
     }
 }

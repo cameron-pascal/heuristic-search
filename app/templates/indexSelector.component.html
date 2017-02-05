@@ -1,0 +1,7 @@
+<range-input-box [minSize] = 2 
+                 [maxLength] = 2 
+                 [rangeMax] = "indexMax" 
+                 [rangeStart] = "indexMin"
+                 [(inputValue)]="currentIndex"></range-input-box>
+<arrow-button [orientationAngle] = 180 (onClicked) = "decrement()"></arrow-button>
+<arrow-button (onClicked) = "increment()"></arrow-button>

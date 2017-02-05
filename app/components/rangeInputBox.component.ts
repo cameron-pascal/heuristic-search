@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, ViewChild, ViewChildren, ElementRef, Renderer, Input } from '@angular/core';
+import { Component, AfterViewInit, ViewChild, ViewChildren, ElementRef, Renderer, Input, Output, EventEmitter } from '@angular/core';
 
 @Component({
     selector: 'range-input-box',
@@ -38,13 +38,16 @@ export class RangeInputBoxComponent implements AfterViewInit {
 
     private renderer: Renderer;
 
-    currentIndex: number;
+    @Input() inputValue: number;
 
     @ViewChild('container') container: ElementRef;
 
     @Input() minSize: number;
     @Input() maxLength: number;
     @Input() rangeMax: number;
+    @Input() rangeStart: number;
+
+    @Output() inputValueChange = new EventEmitter<number>();
 
     constructor(renderer: Renderer) {
         this.renderer = renderer;
@@ -57,18 +60,20 @@ export class RangeInputBoxComponent implements AfterViewInit {
 
     lostFocus(event: any) {
         this.renderer.setElementStyle(this.container.nativeElement, 'box-shadow', 'none');
+        
+        if (this.inputValue <= this.rangeMax) {
+            this.inputValueChange.emit(this.inputValue);
+        }
     }
 
     onInputChange(value: string) {
         let numericValue = Number(value);
 
         if (numericValue !== NaN && numericValue <= this.rangeMax) {
-            this.currentIndex = numericValue;
-            console.log('set to ' + numericValue);
+            this.inputValue = numericValue;
         }
     }
 
-    ngAfterViewInit() {
-    }
+    ngAfterViewInit() { }
 
 }

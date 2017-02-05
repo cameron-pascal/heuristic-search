@@ -1,10 +1,12 @@
-import { Component, OnInit, ElementRef, ViewChild, Input, Renderer } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild, Input, Output, EventEmitter } from '@angular/core';
 import { Grid } from '../models/grid.model';
 import { Cell, CellType } from '../models/cell.model';
+import { SearchResult } from '../models/search.model';
+import { SearchManagerService } from '../services/searchManager.service';
 
 @Component({
     selector: 'grid',
-    templateUrl: './app/templates/grid.component.html',
+    templateUrl: './app/templates/grid.component.html'
     /*styles: [`
         canvas {
             height: 2800px;
@@ -15,13 +17,8 @@ import { Cell, CellType } from '../models/cell.model';
 export class GridComponent implements OnInit {
     
     @ViewChild('displayCanvas') displayCanvas: ElementRef;
-    @ViewChild('hitCanvas') hitCanvas: ElementRef;
-    
-    @Input() gridModel: Grid;
-    @Input() startAndGoalCellIds: [number, number];
-    @Input() path: Array<Cell>;
 
-    private cellMap: Array<Cell>;
+    @Output() cellClicked: EventEmitter<Cell>;
 
     private readonly cellDimensions = [10, 10];
     private readonly gridLineColor = "#000000";
@@ -33,51 +30,56 @@ export class GridComponent implements OnInit {
     private readonly startColor = "#66CD00"
     private readonly endColor = "#B74C4C";
 
-    constructor(renderer: Renderer) { }
+    private searchResult: SearchResult;
+
+    constructor(private readonly searchManager: SearchManagerService) { }
 
     ngOnInit() {
-        let cells = this.gridModel.getAllCells();
-        this.cellMap = this.createCellMap(cells);
-        
-        let canvas = this.displayCanvas.nativeElement as HTMLCanvasElement;
-        let context = canvas.getContext('2d');
+        const canvas = this.displayCanvas.nativeElement as HTMLCanvasElement;
+        const context = canvas.getContext('2d');
 
-        this.draw(cells, context, this.path);
+        this.searchManager.currentSearch$.subscribe(searchResult => {
+            this.searchResult = searchResult;
+            context.clearRect(0, 0, this.displayCanvas.nativeElement.width, this.displayCanvas.nativeElement.height);
+            this.draw(searchResult, context);
+        });
     }
 
     gridClicked(x: number, y: number) {
-        let col = Math.floor(x / this.cellDimensions[0]);
-        let row = Math.floor(y / this.cellDimensions[1]);
-        console.log("cell " + [row, col] +": ", this.gridModel.getCell(row, col));
+        const col = Math.floor(x / this.cellDimensions[0]);
+        const row = Math.floor(y / this.cellDimensions[1]);
+
+        const cell = this.searchResult.grid.getCell(row, col);
+
+        this.cellClicked.emit(cell);
     }
 
-    private draw(cells: Array<Array<Cell>>, context: CanvasRenderingContext2D, path: Array<Cell>) {
+    private draw(searchResult: SearchResult, context: CanvasRenderingContext2D) {
         
-        let cellWidth = this.cellDimensions[1];
-        let cellHeight = this.cellDimensions[0];
+        const cellWidth = this.cellDimensions[1];
+        const cellHeight = this.cellDimensions[0];
 
         context.lineWidth = 1;
         context.strokeStyle = this.gridLineColor;
         
-        for(let row=0; row<cells.length; row++) {
-            let colWidth = cells[row].length;
-            for (let col=0; col<colWidth; col++) {
-                let cell = cells[row][col];
+        for(let row = 0; row < searchResult.grid.length; row++) {
+            for (let col = 0; col < searchResult.grid.width; col++) {
+                const cell = searchResult.grid.getCell(row, col);
                 
-                let x = col * cellWidth;
-                let y = row * cellHeight;
+                const x = col * cellWidth;
+                const y = row * cellHeight;
 
                 context.beginPath();
                 context.rect(x, y, cellWidth, cellHeight);
 
-                if (path.indexOf(cell) >= 0) {
+                if (searchResult.path.indexOf(cell) >= 0) {
                     context.fillStyle = 'violet';
                     if (cell.isFast) {
                         context.fillStyle = 'yellow';
                     }
-                } else if (cell.id === this.startAndGoalCellIds[0]) {
+                } else if (cell.id === searchResult.startAndGoalCells[0].id) {
                     context.fillStyle = this.startColor;
-                } else if (cell.id === this.startAndGoalCellIds[1]) {
+                } else if (cell.id === searchResult.startAndGoalCells[1].id) {
                     context.fillStyle = this.endColor;
                 } else if (cell.cellType === CellType.PartiallyBlocked) {
                     if (cell.isFast) {
@@ -100,17 +102,5 @@ export class GridComponent implements OnInit {
                 context.closePath();
             }
         }
-    }
-
-    private createCellMap(cells: Array<Array<Cell>>) {
-        let map = new Array<Cell>();
-        for(let i=0; i<cells.length; i++) {
-            let colWidth = cells[i].length;
-            for (let j=0; j<colWidth; j++) {
-                map.push(cells[i][j]);
-            }
-        }
-
-        return map;
     }
 }

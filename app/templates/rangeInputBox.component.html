@@ -1,7 +1,8 @@
 <div #container (click)="clicked()" >
     <input #inputBox (blur)="lostFocus()" 
-            (change) = "onInputChange(inputBox.value)"
-            type="text" 
+            (ngModelChange) = "onInputChange($event)"
+            type="text"
+            [(ngModel)] = "inputValue"
             [attr.size]="minSize" 
             [attr.maxlength]="maxLength">
     <span>&nbsp;/ {{rangeMax}}</span>
