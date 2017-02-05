@@ -1,16 +1,16 @@
-import { Grid } from '../grid.model';
-import { Cell } from '../cell.model';
-import { Direction } from '../cell.model';
-import { CellType} from '../cell.model';
-import { BinaryMinHeap} from '../binaryMinHeap.model';
+import { Grid } from './grid.model';
+import { Cell } from './cell.model';
+import { Direction } from './cell.model';
+import { CellType} from './cell.model';
+import { BinaryMinHeap} from './binaryMinHeap.model';
 
-export enum searchType {
+export enum SearchType {
     Astar,
     WeightedAstar,
     Uniformed
 }
 
-export class search {
+export class Search {
 
     private grid: Grid;
     private start: Cell;
@@ -85,16 +85,16 @@ export class search {
 		}
 	}
 
-    initiateSearch(type: searchType) {
+    initiateSearch(type: SearchType) {
         this.start.parent = this.start;
         this.start.g = 0;
         this.start.f = this.start.h + this.start.g;
 		let priority = 0;
-		if (type === searchType.Astar){
+		if (type === SearchType.Astar){
 			priority = this.start.g + this.start.h;
-		} else if (type === searchType.Uniformed){
+		} else if (type === SearchType.Uniformed){
 			priority = this.start.g;
-		} else if (type == searchType.WeightedAstar){
+		} else if (type == SearchType.WeightedAstar){
 			priority = this.start.g + this.start.h * this.weight;
 		}
 		this.openHeap.push(this.start, priority);
@@ -144,11 +144,11 @@ export class search {
 					console.log("h : " , neighbor[1].h)
 					if(!beenVisited){
 						let priority = 0;
-						if (type === searchType.Astar){
+						if (type === SearchType.Astar){
 							priority = neighbor[1].g + neighbor[1].h;
-						} else if (type === searchType.Uniformed){
+						} else if (type === SearchType.Uniformed){
 							priority = neighbor[1].g;
-						} else if (type == searchType.WeightedAstar){
+						} else if (type == SearchType.WeightedAstar){
 							priority = neighbor[1].g + neighbor[1].h * this.weight;
 						}
 						this.openHeap.push(neighbor[1], priority)
