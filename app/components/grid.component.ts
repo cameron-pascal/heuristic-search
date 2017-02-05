@@ -71,7 +71,7 @@ export class GridComponent implements OnInit {
                 context.rect(x, y, cellWidth, cellHeight);
 
                 if (path.indexOf(cell) >= 0) {
-                    context.fillStyle = 'brown';
+                    context.fillStyle = 'violet';
                     if (cell.isFast) {
                         context.fillStyle = 'yellow';
                     }

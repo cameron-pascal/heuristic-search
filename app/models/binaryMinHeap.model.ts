@@ -1,11 +1,9 @@
-import { PriorityQueue } from './priorityQueue.model';
-
 class HeapNode<T> {
     
     constructor(public readonly item: T, public readonly priority: number) { }
 }
 
-export class BinaryMinHeap<T> implements PriorityQueue<T> {
+export class BinaryMinHeap<T> {
 
     private _nodes: Array<HeapNode<T>>;
     private _nodeHash: { [key: number]: boolean } = {};
