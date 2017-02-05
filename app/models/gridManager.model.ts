@@ -134,7 +134,7 @@ export class GridManager {
         for (let row = 0; row < grid.length; row++) {
             for (let col = 0; col < grid.width; col++) {
                 let cell = grid.getCell(row, col);
-                let distance = this.calculateEuclidianDistance([row, col], goalCoordinates);
+                let distance = this.calculateChebyshevDistance([row, col], goalCoordinates);
                 cell.h = distance;
             }
         }
@@ -177,6 +177,19 @@ export class GridManager {
         let yDelta = Math.abs(y1 - y2);
 
         return Math.floor(Math.sqrt( (xDelta * xDelta) + (yDelta * yDelta) )); 
+    }
+
+    private calculateChebyshevDistance(a: [number, number], b: [number, number]) { // [y, x]
+        let x1 = a[1];
+        let x2 = b[1];
+
+        let y1 = a[0];
+        let y2 = b[0];
+
+        let xDelta = Math.abs(x1 - x2);
+        let yDelta = Math.abs(y1 - y2);
+        
+        return Math.floor(Math.max(xDelta, yDelta)); 
     }
 
     private setStartAndGoalCellsRegion() {

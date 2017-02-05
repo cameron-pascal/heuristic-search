@@ -34,7 +34,7 @@ export class MainComponent  {
     //console.log(this.grid.serialize());
     this.startAndGoalCells = gridManager.getNewStartAndGoalCells();
     let s = new search(this.grid, this.startAndGoalCells[0], this.startAndGoalCells[1]);
-    this.path = s.initiateSearch(searchType.WeightedAstar);
+    this.path = s.initiateSearch(searchType.Astar);
     console.log();
   } 
    
