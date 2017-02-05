@@ -51,7 +51,7 @@ export class Cell {
 
         this.h = Infinity;
         this.f = null;
-        this.g = 0;
+        this.g = Infinity;
         this.parent = null;
         
     }

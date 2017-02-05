@@ -23,7 +23,7 @@ export class GridComponent implements OnInit {
 
     private cellMap: Array<Cell>;
 
-    private readonly cellDimensions = [20, 20];
+    private readonly cellDimensions = [10, 10];
     private readonly gridLineColor = "#000000";
     private readonly unblockedColor = "#FFFFFF";
     private readonly partiallyBlockedColor = "#D3D3D3";

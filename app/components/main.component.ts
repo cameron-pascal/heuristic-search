@@ -4,6 +4,7 @@ import { GridManager } from '../models/gridManager.model';
 import { Cell } from '../models/cell.model';
 import { search } from '../models/search/astar.model';
 import { BinaryMinHeap } from '../models/binaryMinHeap.model';
+import { searchType } from '../models/search/astar.model';
 
 @Component({
   selector: 'main-container',
@@ -33,7 +34,7 @@ export class MainComponent  {
     //console.log(this.grid.serialize());
     this.startAndGoalCells = gridManager.getNewStartAndGoalCells();
     let s = new search(this.grid, this.startAndGoalCells[0], this.startAndGoalCells[1]);
-    this.path = s.initiateSearch();
+    this.path = s.initiateSearch(searchType.WeightedAstar);
     console.log();
   } 
    
