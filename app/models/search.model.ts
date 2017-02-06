@@ -11,7 +11,7 @@ export enum SearchType {
 }
 
 export class SearchResult {
-  constructor (public readonly grid: Grid, public readonly path: Array<Cell>, public readonly startAndGoalCells: [Cell, Cell]) { }
+  constructor (public readonly grid: Grid, public readonly path: Array<Cell>, public readonly startAndGoalCells: [Cell, Cell], public readonly expanded: number) { }
 }
 
 export class Search {
@@ -19,6 +19,8 @@ export class Search {
     private grid: Grid;
     private start: Cell;
     private end: Cell;
+
+	expanded: number;
 	
     private closedList: Array<Cell>;
 
@@ -33,10 +35,12 @@ export class Search {
         this.end = end;
         this.closedList = new Array<Cell>();
 		this.openHeap = new BinaryMinHeap<Cell>(cell => cell.id);
-		this.weight = 2;
+		this.weight = 1.5;
+		this.expanded = 0;
     }
 
     initiateSearch(type: SearchType) {
+		console.log("Search");
         this.start.parent = this.start;
         this.start.g = 0;
         this.start.f = this.start.h + this.start.g;
@@ -61,7 +65,7 @@ export class Search {
 					ret.push(curr);
 					curr = curr.parent;
 				}
-				const searchResult = new SearchResult(this.grid, ret.reverse(), [this.start, this.end]);
+				const searchResult = new SearchResult(this.grid, ret.reverse(), [this.start, this.end], this.expanded);
 				return searchResult;
 			}
 
@@ -79,6 +83,7 @@ export class Search {
  
 			for (var i=0; i<neighbors.length;i++) {
 				let neighbor = neighbors[i];
+				this.expanded = this.expanded + 1;
 
 				if (this.closedList.indexOf(neighbor[1]) >= 0) {
 					continue;

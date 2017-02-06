@@ -78,6 +78,19 @@ export class GridManager {
         }
     }
 
+    gridRestart(grid: Grid){
+        for (let row = 0; row < grid.length; row++) {
+            for (let col = 0; col < grid.width; col++) {
+                let cell = grid.getCell(row, col);
+                 //cell.h = Infinity;
+                 //cell.f = null;
+                 //cell.g = Infinity;
+                 //cell.parent = null;
+                 cell.visited = false;
+            }
+        }
+    }
+
     private calculateCost(cell: Cell) {
         cell.availableDirections.forEach(direction => {
             let neighbor = cell.getNeigbor(direction);

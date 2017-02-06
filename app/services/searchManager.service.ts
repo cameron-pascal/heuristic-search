@@ -24,6 +24,8 @@ export class SearchManagerService {
     }
 
     constructor() {
+        let avgLength = 0;
+        let avgExpanded = 0;
         this._searchIndexMax  = (this.gridCount * this.searchesPerGrid) - 1;
         for (let i = 0; i < this.gridCount; i++) {
             const grid = new Grid(this.gridLength, this.gridWidth);
@@ -31,11 +33,29 @@ export class SearchManagerService {
             for (let j = 0; j < this.searchesPerGrid; j++) {
                 const startAndGoalPair = gridManager.getNewStartAndGoalCells();
                 const search = new Search(grid, startAndGoalPair[0], startAndGoalPair[1]);
-                const result = search.initiateSearch(SearchType.AStar);
-                this._searches.push(result);
+                 const result = search.initiateSearch(SearchType.WeightedAStar);
+                    gridManager.gridRestart(grid);
+                    avgLength = result.path.length + avgLength;
+                    avgExpanded = result.expanded + avgExpanded;
+
+                    this._searches.push(result);
+                /*for (let x = 0; x < 3; x++){
+                    let type = SearchType.Uniformed;
+                    if(x == 0){
+                        type = SearchType.Uniformed;
+                    } else if (x == 1){
+                        type = SearchType.AStar;
+                    } else if (x == 2){
+                        type = SearchType.AStar;
+                    } 
+                    const result = search.initiateSearch(type);
+                    gridManager.gridRestart(grid);
+                    this._searches.push(result);
+                    }*/
             }
         }
-
+        avgLength = avgLength / 50;
+        avgExpanded = avgExpanded / 50;
         this._currentSearchSource = new BehaviorSubject<SearchResult>(this._searches[this.searchIndexStart]);
     }
     
