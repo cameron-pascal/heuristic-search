@@ -33,7 +33,7 @@ export class SearchManagerService {
             for (let j = 0; j < this.searchesPerGrid; j++) {
                 const startAndGoalPair = gridManager.getNewStartAndGoalCells();
                 const search = new Search(grid, startAndGoalPair[0], startAndGoalPair[1]);
-                 const result = search.initiateSearch(SearchType.WeightedAStar);
+                 const result = search.initiateSearch(SearchType.Uniformed);
                     gridManager.gridRestart(grid);
                     avgLength = result.path.length + avgLength;
                     avgExpanded = result.expanded + avgExpanded;
