@@ -11,7 +11,7 @@ export enum SearchType {
 }
 
 export class SearchResult {
-  constructor (public readonly grid: Grid, public readonly path: Array<Cell>, public readonly startAndGoalCells: [Cell, Cell], public readonly expanded: number) { }
+  constructor (public readonly grid: Grid, public readonly path: Array<Cell>, public readonly startAndGoalCells: [Cell, Cell], public readonly expanded: number, public readonly length: number) { }
 }
 
 export class Search {
@@ -29,6 +29,9 @@ export class Search {
 
 	private weight: number;
 
+	length: number;
+
+
     constructor(grid: Grid, start: Cell, end: Cell) {
         this.grid = grid;
         this.start = start;
@@ -37,6 +40,7 @@ export class Search {
 		this.openHeap = new BinaryMinHeap<Cell>(cell => cell.id);
 		this.weight = 1.5;
 		this.expanded = 0;
+		this.length = 0;
     }
 
     initiateSearch(type: SearchType) {
@@ -61,11 +65,12 @@ export class Search {
 			if (currentNode == this.end) {
 				let curr = currentNode;
 				let ret = new Array<Cell>();
+				this.length = curr.parent.g;
 				while(curr.parent !== curr) {
 					ret.push(curr);
 					curr = curr.parent;
 				}
-				const searchResult = new SearchResult(this.grid, ret.reverse(), [this.start, this.end], this.expanded);
+				const searchResult = new SearchResult(this.grid, ret.reverse(), [this.start, this.end], this.expanded, this.length);
 				return searchResult;
 			}
 
