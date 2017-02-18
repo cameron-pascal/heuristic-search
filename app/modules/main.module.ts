@@ -11,6 +11,7 @@ import { RangeInputBoxComponent } from '../components/rangeInputBox.component';
 import { GridComponent } from '../components/grid.component';
 import { CellInfoComponent } from '../components/cellInfo.component';
 import { RotationDirective } from '../directives/rotationAngle.directive';
+import { SearchManagerService } from '../services/searchManager.service';
 
 const routes: Routes = [ 
   { path: 'splash', component: SplashComponent },
@@ -19,6 +20,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
+  providers: [SearchManagerService],
   imports: [ BrowserModule, FormsModule, RouterModule.forRoot(routes) ],
   exports: [ MainComponent ],
   declarations: [ MainComponent, AppHostComponent, SplashComponent, ArrowButtonComponent, IndexSelectorComponent, CellInfoComponent, RangeInputBoxComponent, RotationDirective, GridComponent ],

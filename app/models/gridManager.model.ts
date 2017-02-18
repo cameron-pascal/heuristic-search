@@ -5,6 +5,8 @@ export abstract class GridManager {
 
     protected static readonly hardRegionCount = 8;
 
+    private static readonly gridWidth = 160;
+    private static readonly gridLength = 120;
     private static readonly perpendicularUnblockedCost = 1;
     private static readonly perpendicularPartiallyBlockedCost = 1;
     private static readonly perpendicularDifferentCost = 1.5;
@@ -15,29 +17,30 @@ export abstract class GridManager {
     
     protected hardRegionCenters: Array<Cell>;
 
-    protected readonly grid: Grid;
-
-    protected abstract get startCell(): Cell;
-
-    protected abstract get goalCell(): Cell;
-
-    constructor(grid: Grid, initializationData?: any) {
-        this.grid = grid;
-        const self = this;
-
-        this.create = function(initializationData) {
-            self.initializeGrid(initializationData);
-            self.calculateMovementCosts(this.grid);
-        }
+    protected _grid: Grid;
+    public get grid() {
+        return this._grid;
     }
 
-    protected create: (initializationData?: any) => void;
+    public abstract get startCell(): Cell;
+
+    public abstract get goalCell(): Cell;
+
+    protected create() {
+        this.createGrid();
+        this.initializeGrid();
+        this.calculateMovementCosts(this.grid);
+    }
 
     protected abstract initializeGrid(initializationData?: any): void;
 
+    protected createGrid() {
+        this._grid = new Grid([GridManager.gridLength, GridManager.gridWidth]);
+    }
+
     public serialize() {
         let serializedData = this.serializeToCoordinate(this.startCell) + '\r\n' + this.serializeToCoordinate(this.goalCell) +'\r\n';
-        
+
         this.hardRegionCenters.forEach(coordinate => {
             serializedData += this.serializeToCoordinate(coordinate) + '\r\n';
         });

@@ -7,34 +7,41 @@ export class SerializedGridManager extends GridManager {
     private _startCell: Cell;
     private _goalCell: Cell;
 
-    protected get startCell() {
+    private readonly serializedData: Array<string>;
+
+    public get startCell() {
         return this._startCell;
     }
 
-    protected get goalCell() {
+    public get goalCell() {
         return this._goalCell;
     }
 
     constructor(data: string) {
-        const rows = data.split('\r\n');
-        super(new Grid(rows.splice(GridManager.hardRegionCount)), rows.splice(0, GridManager.hardRegionCount - 1));
+        super();
+        this.serializedData = data.split('\r\n');
+        this.create();
     }
 
-    protected initializeGrid(initializationData: Array<string>) {
-        this._startCell = this.extractCell(initializationData[0].trim());
-        this._goalCell = this.extractCell(initializationData[1].trim());
+    protected createGrid() {
+        this._grid = new Grid(this.serializedData.splice(GridManager.hardRegionCount + 2));
+    }
+
+    protected initializeGrid() {
+        this._startCell = this.extractCell(this.serializedData[0].trim());
+        this._goalCell = this.extractCell(this.serializedData[1].trim());
 
         this.hardRegionCenters = new Array<Cell>();
         for (let i=0; i<GridManager.hardRegionCount; i++) {
-            const regionCenter = this.extractCell(initializationData[i + 2]);
+            const regionCenter = this.extractCell(this.serializedData[i + 2]);
             this.hardRegionCenters.push(regionCenter);
         }
     }
 
     private extractCell(data: string) {
-        const regex = /(\(\d\))\s(\(\d\)))/ // (x_coord, y_coord)
+        const regex = /\((\d+),\s(\d+)\)/ // (x_coord, y_coord)
         const match = regex.exec(data);
 
-        return this.grid.getCell(Number(match[1]), Number(match[0]));
+        return this.grid.getCell(Number(match[2]), Number(match[1]));
     }
 }

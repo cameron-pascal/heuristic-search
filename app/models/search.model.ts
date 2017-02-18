@@ -107,6 +107,9 @@ export class Search {
 					let data = self.openCellsCellData[cell.id]
 					if (!data) {
 						data = new CellSearchData();
+						if (type === SearchType.WeightedAStar) {
+							data.weight = self.weight;
+						}
 						data.h = self.grid.getChebyshevDistance(self.goalCell, cell);
 					}
 					return data;

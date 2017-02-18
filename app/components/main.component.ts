@@ -6,7 +6,6 @@ import { SearchManagerService } from '../services/searchManager.service';
 @Component({
   selector: 'main-container',
   templateUrl: './app/templates/main.component.html',
-  providers: [SearchManagerService],
   styles: [`
     #header {
       display: inline-block;
@@ -34,8 +33,8 @@ export class MainComponent {
   save() {
     const data = this.searchManager.serializeCurrentSearchGrid();
     
-    const buf = new ArrayBuffer(data.length * 2);
-    const bufView = new Uint16Array(buf);
+    const buf = new ArrayBuffer(data.length);
+    const bufView = new Uint8Array(buf);
 
     for (let i=0; i<data.length; i++) {
       bufView[i] = data.charCodeAt(i);

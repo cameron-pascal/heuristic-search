@@ -127,16 +127,6 @@ export class Grid {
         return serializedData;
     }
 
-    private deserializeGrid(data: string) {
-        
-
-
-    }
-
-    private constructGrid(rowCount: number, colCount: number, serializecData?: Array<string>) {
-        
-    }
-
     private setNeighbors(cellCoordinate: [number, number], grid: Array<Array<Cell>>) {
         let row = cellCoordinate[0];
         let col = cellCoordinate[1];

@@ -6,6 +6,7 @@ import { Grid } from '../models/grid.model';
 import { Cell } from '../models/cell.model';
 import { GridManager } from '../models/gridManager.model';
 import { RandomizedGridManager } from '../models/randomizedGridManager.model';
+import { SerializedGridManager } from '../models/serializedGridManager.model';
 
 @Injectable()
 export class SearchManagerService {
@@ -16,8 +17,6 @@ export class SearchManagerService {
     private _currentGridManager: GridManager;
     private _searchIndexMax: number;
 
-    private readonly gridWidth = 160;
-    private readonly gridLength = 120;
     private readonly gridCount = 5;
     private readonly searchesPerGrid = 10;
     
@@ -27,19 +26,18 @@ export class SearchManagerService {
         return this._currentSearchSource;
     }
 
-    constructor() {
+    initializeWithGeneratedGrids() {
         let avgLength = 0;
         let avgExpanded = 0;
         this._searchIndexMax  = (this.gridCount * this.searchesPerGrid) - 1;
         let count = 0;
         for (let i = 0; i < this.gridCount; i++) {
-            const grid = new Grid([this.gridLength, this.gridWidth]);
-            const gridManager = new RandomizedGridManager(grid);
+            const gridManager = new RandomizedGridManager();
             for (let j = 0; j < this.searchesPerGrid; j++) {
                 this._gridManagers[count++] = gridManager;
                 const startAndGoalPair = gridManager.getNewStartAndGoalCells();
-                const search = new Search(grid, startAndGoalPair[0], startAndGoalPair[1]);
-                const result = search.initiateSearch(SearchType.AStar);
+                const search = new Search(gridManager.grid, startAndGoalPair[0], startAndGoalPair[1]);
+                const result = search.initiateSearch(SearchType.WeightedAStar);
                  //avgLength = startAndGoalPair[1].g + avgLength;
                 avgExpanded = result.expanded + avgExpanded;
 
@@ -61,6 +59,15 @@ export class SearchManagerService {
         }
         avgLength = avgLength / 50;
         avgExpanded = avgExpanded / 50;
+        this._currentSearchSource = new BehaviorSubject<SearchResult>(this._searches[this.searchIndexStart]);
+    }
+
+    initializeWithSerializedGrid(data: string) {
+        this._searchIndexMax = 0;
+        const gridManager = new SerializedGridManager(data);
+        this._gridManagers[0] = gridManager;
+        this._currentGridManager = gridManager;
+        this._searches.push(new Search(gridManager.grid, gridManager.startCell, gridManager.goalCell).initiateSearch(SearchType.WeightedAStar));
         this._currentSearchSource = new BehaviorSubject<SearchResult>(this._searches[this.searchIndexStart]);
     }
     
