@@ -4,13 +4,16 @@ import { Observable } from 'rxjs/Observable';
 import { Search, SearchResult, SearchType } from '../models/search.model';
 import { Grid } from '../models/grid.model';
 import { Cell } from '../models/cell.model';
+import { GridManager } from '../models/gridManager.model';
 import { RandomizedGridManager } from '../models/randomizedGridManager.model';
 
 @Injectable()
 export class SearchManagerService {
     
     private _searches = new Array<SearchResult>();
+    private _gridManagers: { [index: number]: GridManager } = {};
     private _currentSearchSource: BehaviorSubject<SearchResult>;
+    private _currentGridManager: GridManager;
     private _searchIndexMax: number;
 
     private readonly gridWidth = 160;
@@ -28,10 +31,12 @@ export class SearchManagerService {
         let avgLength = 0;
         let avgExpanded = 0;
         this._searchIndexMax  = (this.gridCount * this.searchesPerGrid) - 1;
+        let count = 0;
         for (let i = 0; i < this.gridCount; i++) {
             const grid = new Grid([this.gridLength, this.gridWidth]);
             const gridManager = new RandomizedGridManager(grid);
             for (let j = 0; j < this.searchesPerGrid; j++) {
+                this._gridManagers[count++] = gridManager;
                 const startAndGoalPair = gridManager.getNewStartAndGoalCells();
                 const search = new Search(grid, startAndGoalPair[0], startAndGoalPair[1]);
                 const result = search.initiateSearch(SearchType.AStar);
@@ -63,11 +68,16 @@ export class SearchManagerService {
       return this._searchIndexMax;
     }
 
+    serializeCurrentSearchGrid() {
+        return this._currentGridManager.serialize();
+    }
+
     getCurrentCellSearchData(cell: Cell) {
         return this._currentSearchSource.getValue().getCellSearchData(cell);
     }
 
     setCurrentSearchResult(index: number) {
         this._currentSearchSource.next(this._searches[index]);
+        this._currentGridManager = this._gridManagers[index];
     }
 }

@@ -36,7 +36,8 @@ export abstract class GridManager {
     protected abstract initializeGrid(initializationData?: any): void;
 
     public serialize() {
-        let serializedData = this.serializeToCoordinate(this.startCell) + '\r\n' + this.serializeToCoordinate(this.goalCell);
+        let serializedData = this.serializeToCoordinate(this.startCell) + '\r\n' + this.serializeToCoordinate(this.goalCell) +'\r\n';
+        
         this.hardRegionCenters.forEach(coordinate => {
             serializedData += this.serializeToCoordinate(coordinate) + '\r\n';
         });

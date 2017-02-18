@@ -1,5 +1,6 @@
-<div id="header">
+<div #headerBox id="header">
     <index-selector></index-selector>
     <cell-info [(cellData)] = "currentCellData"></cell-info>
+    <input type='button' value='Save' (click)="save()"/>
 </div>
 <grid #resultGrid [(clickedCellData)] = "currentCellData"></grid>

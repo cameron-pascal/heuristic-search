@@ -109,12 +109,20 @@ export class Grid {
 
     serialize() {
         let serializedData = '';
-        this.grid.forEach(row => {
-            row.forEach(cell => {
+
+        let i=0;
+        for (; i<this.length - 1; i++) {
+            for (let j=0; j<this.width; j++) {
+                const cell = this.grid[i][j];
                 serializedData += cell.serialize();
-            });
+            }
             serializedData += '\r\n';
-        });
+        }
+
+        for (let j=0; j<this.width; j++) {
+            const cell = this.grid[i][j];
+            serializedData += cell.serialize();
+        }
 
         return serializedData;
     }
