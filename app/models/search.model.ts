@@ -23,6 +23,7 @@ export class CellSearchData {
 }
 
 export class SearchResult {
+
   constructor (public readonly grid: Grid, public readonly cellsInPath: { [id: number]: Cell }, public readonly startAndGoalCells: [Cell, Cell], public readonly expanded: number, 
   			   public readonly getCellSearchData: (cell: Cell) => CellSearchData) { }
 }
@@ -62,7 +63,7 @@ export class Search {
 	private openHeap = new BinaryMinHeap<Cell>(cell => cell.id);
 
 	private weight: number;
-
+	
     constructor(grid: Grid, start: Cell, goal: Cell) {
         this.grid = grid;
         this.startCell = start;
