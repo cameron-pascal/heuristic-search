@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { Cell } from '../models/cell.model';
+import { CellSearchData } from '../models/search.model'
 
 @Component({
     selector: 'cell-info',
@@ -7,8 +7,8 @@ import { Cell } from '../models/cell.model';
 })
 export class CellInfoComponent {
 
-    @Input() cell: Cell;
-    @Output() cellChange = new EventEmitter<Cell>(); 
+    @Input() cellData: CellSearchData;
+    @Output() cellDataChange = new EventEmitter<CellSearchData>(); 
     
     constructor() { }
 }

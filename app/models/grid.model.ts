@@ -14,16 +14,85 @@ enum CellPosition {
 }
 
 export class Grid {
-
-    private grid: Array<Array<Cell>>;
+    private readonly grid: Array<Array<Cell>>;
 
     public readonly width: number;
     public readonly length: number;
 
-    constructor(length: number, width: number) {
-        this.grid = this.constructGrid(length, width);
-        this.width = width;
-        this.length = length;
+    private coordinateMap: { [id: number] : [number, number] } = {};
+
+    constructor(dataOrDimensions: [number, number] | Array<string>) {
+        let createCell: (coordinate: [number, number], id: number) => Cell;
+        const self = this;
+        if (typeof dataOrDimensions[0] === 'number') {
+            const dimensions = dataOrDimensions as [number, number];
+            this.length = dimensions[0];
+            this.width = dimensions[1];
+            createCell = function(coordinate: [number, number], id: number) {
+                self.coordinateMap[id] = coordinate;
+                return new Cell(id);
+            };
+        } else {
+            const data = dataOrDimensions as Array<string>;
+            this.length = data.length;
+            this.width = data[0].length;
+            createCell = function(coordinate: [number, number], id: number) {
+                const row = data[coordinate[0]].trim();
+                const cellData = row.charAt(coordinate[1]);
+                self.coordinateMap[id] = coordinate;
+                return new Cell(id, cellData);
+            };
+        }
+
+        this.grid = new Array<Array<Cell>>();
+        let cellId = 0;
+        
+        for (let rowIndex=0; rowIndex < this.length; rowIndex++) {
+            const row = new Array<Cell>();
+            this.grid.push(row);
+            for (let colIndex=0; colIndex < this.width; colIndex++) {
+                const cell = createCell([rowIndex, colIndex], cellId++);
+                row.push(cell);
+            }
+        }
+
+        for (let rowIndex=0; rowIndex < this.length; rowIndex++) {
+            for (let colIndex=0; colIndex < this.width; colIndex++) {
+                this.setNeighbors([rowIndex, colIndex], this.grid);
+            }
+        }
+    }
+
+    getEuclidianDistance(a: Cell, b: Cell) { // [y, x]
+        const aCoord = this.coordinateMap[a.id];
+        const bCoord = this.coordinateMap[b.id];
+
+        const x1 = aCoord[1];
+        const x2 = bCoord[1];
+
+        const y1 = aCoord[0];
+        const y2 = bCoord[0];
+
+        const xDelta = Math.abs(x1 - x2);
+        const yDelta = Math.abs(y1 - y2);
+
+        return Math.floor(Math.sqrt( (xDelta * xDelta) + (yDelta * yDelta) )); 
+    }
+
+    getChebyshevDistance(a: Cell, b: Cell) { // [y, x]
+        const aCoord = this.coordinateMap[a.id];
+        const bCoord = this.coordinateMap[b.id];
+
+        const x1 = aCoord[1];
+        const x2 = bCoord[1];
+
+        const y1 = aCoord[0];
+        const y2 = bCoord[0];
+
+        const xDelta = Math.abs(x1 - x2);
+        const yDelta = Math.abs(y1 - y2);
+        
+        return Math.floor(Math.max(xDelta, yDelta)); 
     }
 
     getAllCells() {
@@ -32,6 +101,10 @@ export class Grid {
 
     getCell(row: number, col: number) {
         return this.grid[row][col];
+    }
+
+    getCoordinate(cell: Cell) {
+        return this.coordinateMap[cell.id];
     }
 
     serialize() {
@@ -46,25 +119,14 @@ export class Grid {
         return serializedData;
     }
 
-    private constructGrid(rowCount: number, colCount: number) {
-        let grid = new Array<Array<Cell>>();
-        let count = 0;
+    private deserializeGrid(data: string) {
         
-        for (let rowIndex=0; rowIndex < rowCount; rowIndex++) {
-            let row = new Array<Cell>();
-            grid.push(row);
-            for (let colIndex=0; colIndex < colCount; colIndex++) {
-                row.push(new Cell(count++));
-            }
-        }
 
-        for (let rowIndex=0; rowIndex < rowCount; rowIndex++) {
-            for (let colIndex=0; colIndex < colCount; colIndex++) {
-                this.setNeighbors([rowIndex, colIndex], grid);
-            }
-        }
 
-        return grid;
+    }
+
+    private constructGrid(rowCount: number, colCount: number, serializecData?: Array<string>) {
+        
     }
 
     private setNeighbors(cellCoordinate: [number, number], grid: Array<Array<Cell>>) {

@@ -3,7 +3,8 @@ import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Observable } from 'rxjs/Observable';
 import { Search, SearchResult, SearchType } from '../models/search.model';
 import { Grid } from '../models/grid.model';
-import { GridManager } from '../models/gridManager.model';
+import { Cell } from '../models/cell.model';
+import { RandomizedGridManager } from '../models/randomizedGridManager.model';
 
 @Injectable()
 export class SearchManagerService {
@@ -28,18 +29,16 @@ export class SearchManagerService {
         let avgExpanded = 0;
         this._searchIndexMax  = (this.gridCount * this.searchesPerGrid) - 1;
         for (let i = 0; i < this.gridCount; i++) {
-            const grid = new Grid(this.gridLength, this.gridWidth);
-            const gridManager = new GridManager(grid);
+            const grid = new Grid([this.gridLength, this.gridWidth]);
+            const gridManager = new RandomizedGridManager(grid);
             for (let j = 0; j < this.searchesPerGrid; j++) {
-                 const grid = new Grid(this.gridLength, this.gridWidth);
-                 const gridManager = new GridManager(grid);
-                 const startAndGoalPair = gridManager.getNewStartAndGoalCells();
-                 const search = new Search(grid, startAndGoalPair[0], startAndGoalPair[1]);
-                 const result = search.initiateSearch(SearchType.AStar);
-                    avgLength = startAndGoalPair[1].g + avgLength;
-                    avgExpanded = result.expanded + avgExpanded;
+                const startAndGoalPair = gridManager.getNewStartAndGoalCells();
+                const search = new Search(grid, startAndGoalPair[0], startAndGoalPair[1]);
+                const result = search.initiateSearch(SearchType.AStar);
+                 //avgLength = startAndGoalPair[1].g + avgLength;
+                avgExpanded = result.expanded + avgExpanded;
 
-                    this._searches.push(result);
+                this._searches.push(result);
                 /*for (let x = 0; x < 3; x++){
                     let type = SearchType.Uniformed;
                     if(x == 0){
@@ -62,6 +61,10 @@ export class SearchManagerService {
     
     get searchIndexMax() {
       return this._searchIndexMax;
+    }
+
+    getCurrentCellSearchData(cell: Cell) {
+        return this._currentSearchSource.getValue().getCellSearchData(cell);
     }
 
     setCurrentSearchResult(index: number) {

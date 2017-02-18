@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { SearchResult } from '../models/search.model';
+import { SearchResult, CellSearchData } from '../models/search.model';
 import { SearchManagerService } from '../services/searchManager.service';
-import { Cell } from '../models/cell.model';
 
 
 @Component({
@@ -17,14 +16,14 @@ import { Cell } from '../models/cell.model';
 })
 
 export class MainComponent {
-
-  private _currentCell: Cell;
   
-  get currentCell() {
-    return this._currentCell;
+  private _currentCellData: CellSearchData;
+  
+  get currentCellData() {
+    return this._currentCellData;
   }
 
-  set currentCell(val: Cell) {
-    this._currentCell = val;
+  set currentCellData(val: CellSearchData) {
+    this._currentCellData = val;
   }
 }

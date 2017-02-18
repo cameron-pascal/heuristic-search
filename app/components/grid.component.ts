@@ -1,7 +1,7 @@
-import { Component, OnInit, ElementRef, ViewChild, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnDestroy, ElementRef, ViewChild, Input, Output, EventEmitter } from '@angular/core';
 import { Grid } from '../models/grid.model';
 import { Cell, CellType } from '../models/cell.model';
-import { SearchResult } from '../models/search.model';
+import { SearchResult, CellSearchData } from '../models/search.model';
 import { SearchManagerService } from '../services/searchManager.service';
 
 @Component({
@@ -18,8 +18,8 @@ export class GridComponent implements OnInit {
     
     @ViewChild('displayCanvas') displayCanvas: ElementRef;
 
-    @Output() clickedCellChange = new EventEmitter<Cell>();
-    @Input() clickedCell: Cell;
+    @Output() clickedCellDataChange = new EventEmitter<CellSearchData>();
+    @Input() clickedCellData: CellSearchData;
 
     private readonly cellDimensions = [10, 10];
     private readonly gridLineColor = "#000000";
@@ -43,9 +43,13 @@ export class GridComponent implements OnInit {
             this.searchResult = searchResult;
             context.clearRect(0, 0, this.displayCanvas.nativeElement.width, this.displayCanvas.nativeElement.height);
             this.draw(searchResult, context);
-            this.clickedCell = searchResult.startAndGoalCells[0];
-            this.clickedCellChange.emit(this.clickedCell);
+            this.clickedCellData = searchResult.getCellSearchData(searchResult.startAndGoalCells[0]);
+            this.clickedCellDataChange.emit(this.clickedCellData);
         });
+    }
+
+    ngOnDestroy() {
+        this.searchManager.currentSearch$.unsubscribe();
     }
 
     gridClicked(clientX: number, clientY: number) {
@@ -60,8 +64,8 @@ export class GridComponent implements OnInit {
 
         const cell = this.searchResult.grid.getCell(row, col);
 
-        this.clickedCell = cell;
-        this.clickedCellChange.emit(cell);
+        this.clickedCellData = this.searchResult.getCellSearchData(cell);
+        this.clickedCellDataChange.emit(this.clickedCellData);
     }
 
     private draw(searchResult: SearchResult, context: CanvasRenderingContext2D) {
@@ -82,7 +86,7 @@ export class GridComponent implements OnInit {
                 context.beginPath();
                 context.rect(x, y, cellWidth, cellHeight);
 
-                if (searchResult.path.indexOf(cell) >= 0) {
+                if (searchResult.cellsInPath[cell.id]) {
                     context.fillStyle = 'violet';
                     if (cell.isFast) {
                         context.fillStyle = 'yellow';

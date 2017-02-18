@@ -20,20 +20,13 @@ export class Cell {
     private _availableCardinalDirections: Array<Direction>;
     private readonly _id: number;
     private _neighborCosts: Array<number>;
-
-    h: number; // cheapest possible to end
-    f: number; // g + h
-    g: number; // cost from path to start node
-    parent: Cell; // parent that the cell game from
-
-    private weight: number;
     
 
     cellType: CellType = CellType.Unblocked;
     isFast = false;
-    visited = false;
+  
 
-    constructor(id: number) {
+    constructor(id: number, data?: string) {
         this._id = id;
         
         const size = Direction.Down | Direction.Left | Direction.Right | Direction.Up;
@@ -47,12 +40,10 @@ export class Cell {
             this._neighborsHash.push(null);
             this._neighborCosts.push(null);
         }
-
-        this.h = Infinity;
-        this.f = null;
-        this.g = Infinity;
-        this.parent = null;
         
+        if (data) {
+            this.deserialize(data);
+        }
     }
 
     getAllCosts() {
@@ -66,7 +57,7 @@ export class Cell {
         return costs;
     }
 
-    getCost (direction: Direction){
+    getMovementCost (direction: Direction){
         return this._neighborCosts[direction];
     }
 
@@ -115,6 +106,28 @@ export class Cell {
         }
 
         return '2';
+    }
+
+    private deserialize(data: string) {
+        switch (data) {
+            case '0':
+                this.cellType = CellType.Blocked;
+                break;
+            case '1':
+                this.cellType = CellType.Unblocked;
+                break;
+            case '2':
+                this.cellType = CellType.PartiallyBlocked;
+                break;
+            case 'a':
+                this.cellType = CellType.Unblocked;
+                this.isFast = true;
+                break;
+            case 'b':
+                this.cellType = CellType.PartiallyBlocked;
+                this.isFast = true;
+                break;
+        }
     }
 
     getNeigbor(direction: Direction) {

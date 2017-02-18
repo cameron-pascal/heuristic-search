@@ -10,106 +10,161 @@ export enum SearchType {
     Uniformed
 }
 
+export class CellSearchData {
+
+    public visited =  false;
+    public g = Infinity;
+    public h = Infinity;
+    public weight = 1;
+
+    public get f() {
+        return this.g + (this.weight * this.h);
+    }
+}
+
 export class SearchResult {
-  constructor (public readonly grid: Grid, public readonly path: Array<Cell>, public readonly startAndGoalCells: [Cell, Cell], public readonly expanded: number) { }
+  constructor (public readonly grid: Grid, public readonly cellsInPath: { [id: number]: Cell }, public readonly startAndGoalCells: [Cell, Cell], public readonly expanded: number, 
+  			   public readonly getCellSearchData: (cell: Cell) => CellSearchData) { }
+}
+
+class CellSet {
+
+	private hashTable: { [id: number]: boolean } = {};
+
+	public push(cell: Cell) {
+		this.hashTable[cell.id] = true;
+	}
+
+	public containsCell(cell: Cell) {
+		const value = this.hashTable[cell.id];
+
+		if (value) {
+			return true;
+		}
+
+		return false;
+	}
 }
 
 export class Search {
 
     private grid: Grid;
-    private start: Cell;
-    private end: Cell;
+    private startCell: Cell;
+	private startCellData = new CellSearchData();
+
+    private goalCell: Cell;
 
 	expanded: number;
 	
-    private closedList: Array<Cell>;
+    private closedSet = new CellSet();
+	private openCellsCellData: { [id: number] : CellSearchData } = {};
 
-	private openHeap: BinaryMinHeap<Cell>;
-	private closedHeap: BinaryMinHeap<Cell>;
+	private openHeap = new BinaryMinHeap<Cell>(cell => cell.id);
 
 	private weight: number;
 
-    constructor(grid: Grid, start: Cell, end: Cell) {
+    constructor(grid: Grid, start: Cell, goal: Cell) {
         this.grid = grid;
-        this.start = start;
-        this.end = end;
-        this.closedList = new Array<Cell>();
-		this.openHeap = new BinaryMinHeap<Cell>(cell => cell.id);
+        this.startCell = start;
+        this.goalCell = goal;
 		this.weight = 1.5;
 		this.expanded = 0;
     }
 
     initiateSearch(type: SearchType) {
-		console.log("Search");
-        this.start.parent = this.start;
-        this.start.g = 0;
-        this.start.f = this.start.h + this.start.g;
-		let priority = 0;
+		this.openCellsCellData[this.startCell.id] = this.startCellData;
+
+        this.startCellData.g = 0;
+
+		let startPriority = 0;
 		if (type === SearchType.AStar) {
-			priority = this.start.g + this.start.h;
+			startPriority = this.startCellData.f;
 		} else if (type === SearchType.Uniformed) {
-			priority = this.start.g;
+			startPriority = this.startCellData.g;
 		} else if (type == SearchType.WeightedAStar) {
-			priority = this.start.g + this.start.h * this.weight;
+			this.startCellData.weight = this.weight;
+			startPriority = this.startCellData.f;
 		}
-		this.openHeap.push(this.start, priority);
+		this.openHeap.push(this.startCell, startPriority);
+		const cameFrom: { [id: number]: Cell } = {};
+		const path: { [id: number]: Cell } = {};
 
         while (this.openHeap.count > 0) {
-			let currentNode = this.openHeap.pop();
- 
+			const currentCell = this.openHeap.pop();
+			const currentCellData = this.openCellsCellData[currentCell.id];
 			// End case -- result has been found, return the traced path
-			if (currentNode == this.end) {
-				let curr = currentNode;
-				let ret = new Array<Cell>();
-				while(curr.parent !== curr) {
-					ret.push(curr);
-					curr = curr.parent;
+			if (currentCell == this.goalCell) {
+				const keys = Object.keys(cameFrom);
+				delete cameFrom[this.startCell.id]; 
+				let cell = currentCell;
+				while ((cell = cameFrom[cell.id])) {
+					path[cell.id] = cell
 				}
-				const searchResult = new SearchResult(this.grid, ret.reverse(), [this.start, this.end], this.expanded);
+
+				const self = this;
+				const getCellData = function(cell: Cell) {
+					let data = self.openCellsCellData[cell.id]
+					if (!data) {
+						data = new CellSearchData();
+						data.h = self.grid.getChebyshevDistance(self.goalCell, cell);
+					}
+					return data;
+				};
+
+				const searchResult = new SearchResult(this.grid, path, [this.startCell, this.goalCell], this.expanded, getCellData);
 				return searchResult;
 			}
 
-			if (this.closedList.indexOf(currentNode) < 0) {
-				this.closedList.push(currentNode);
+			if (!this.closedSet.containsCell(currentCell)) {
+				this.closedSet.push(currentCell);
 			}
             
-            let neighbors = new Array<[Direction, Cell]>();
-            let availableDirections = currentNode.availableDirections;
+            const neighbors = new Array<[Direction, Cell]>();
+            const availableDirections = currentCell.availableDirections;
         
-            for (let Direction of availableDirections){
-                neighbors.push([Direction, currentNode.getNeigbor(Direction)]);
+            for (let i=0; i<availableDirections.length; i++){
+				const direction = availableDirections[i];
+                neighbors.push([direction, currentCell.getNeigbor(direction)]);
             }
 
  
-			for (var i=0; i<neighbors.length;i++) {
-				let neighbor = neighbors[i];
+			for (let i=0; i<neighbors.length; i++) {
+				const directionAndNeighbor = neighbors[i];
 				this.expanded = this.expanded + 1;
 
-				if (this.closedList.indexOf(neighbor[1]) >= 0) {
+				if (this.closedSet.containsCell(directionAndNeighbor[1])) {
 					continue;
 				}
-				let gScore = currentNode.g + currentNode.getCost(neighbor[0]); 
-				let beenVisited = neighbor[1].visited;
+
+				const tentativeGCost = currentCellData.g + currentCell.getMovementCost(directionAndNeighbor[0]);
+
+				const cellData = this.openCellsCellData[directionAndNeighbor[1].id];
  
-				if (!beenVisited || gScore < neighbor[1].g) {
-					neighbor[1].parent = currentNode;
-					neighbor[1].visited = true;
-					neighbor[1].g = gScore;
-					neighbor[1].f = neighbor[1].g + neighbor[1].h;
+				if (!cellData || tentativeGCost < cellData.g) {
 					
-					if (!beenVisited) {
+					cameFrom[directionAndNeighbor[1].id] = currentCell;
+
+					const neighborCellData = new CellSearchData();
+					this.openCellsCellData[directionAndNeighbor[1].id] = neighborCellData;
+
+					neighborCellData.g = tentativeGCost;
+					neighborCellData.h = this.grid.getChebyshevDistance(directionAndNeighbor[1], this.goalCell);
+					
+					if (!cellData) {
 						let priority = 0;
 						if (type === SearchType.AStar) {
-							priority = neighbor[1].g + neighbor[1].h;
+							priority = neighborCellData.f;
 						} else if (type === SearchType.Uniformed) {
-							priority = neighbor[1].g;
+							priority = neighborCellData.g;
 						} else if (type == SearchType.WeightedAStar) {
-							priority = neighbor[1].g + neighbor[1].h * this.weight;
+							neighborCellData.weight = this.weight
+							priority = neighborCellData.f;
 						}
-						this.openHeap.push(neighbor[1], priority)
+						this.openHeap.push(directionAndNeighbor[1], priority)
 					} 
 				}
 			}
         }
+		debugger;
     }
 }
