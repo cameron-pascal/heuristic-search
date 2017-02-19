@@ -8,7 +8,8 @@ export enum SearchType {
     AStar,
     WeightedAStar,
     Uniformed,
-	SequentialHeuristic
+	SequentialHeuristic,
+	IntegratedHeuristic
 }
 
 export class CellSearchData {
