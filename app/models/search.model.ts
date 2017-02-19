@@ -25,6 +25,14 @@ export class CellSearchData {
     public get f() {
         return this.g + (this.weight * this.h);
     }
+
+	public getHeuristics(grid: Grid, currentCell: Cell, endCell: Cell){
+		this.hList.push(grid.getChebyshevDistance(currentCell, endCell));
+		this.hList.push(grid.getEuclidianDistance(currentCell, endCell));
+		this.hList.push(Math.pow(grid.getEuclidianDistance(currentCell, endCell), 2));
+		this.hList.push(10);
+		this.hList.push(9);
+	}
 }
 
 export class SearchResult {
@@ -186,12 +194,41 @@ export class Search {
 		debugger;
     }
 
-	key(s:Cell, i:number){
+	key(s:Cell, index:number){
 		const cellData = this.openCellsCellData[s.id];
-		return cellData.gList[i] + 1.5 * cellData.hList[i];
-		
+		cellData.getHeuristics(this.grid, s, this.goalCell);
+		return cellData.gList[index] + 1.5 * cellData.hList[index];
 	}
-	ExpandState(s:Cell, i:number){
+
+	ExpandState(s:Cell, index:number){
+
+		  const neighbors = new Array<[Direction, Cell]>();
+            const availableDirections = s.availableDirections;
+        
+            for (let i=0; i<availableDirections.length; i++){
+				const direction = availableDirections[i];
+                neighbors.push([direction, s.getNeigbor(direction)]);
+            }
+
+ 
+			for (let i=0; i<neighbors.length; i++) {
+				const directionAndNeighbor = neighbors[i];
+				this.expanded = this.expanded + 1;
+				const a = this.openCellsCellData[directionAndNeighbor[1].id];
+				if (!a) {
+					const currCellData = new CellSearchData();
+					currCellData.gList[index] = Infinity;
+					currCellData.backPointerList[index] = null;
+					this.openCellsCellData[directionAndNeighbor[1].id] = currCellData;
+				}
+				if (this.openCellsCellData[directionAndNeighbor[1].id].gList[index] > (this.openCellsCellData[s.id].gList[index] + s.getMovementCost(directionAndNeighbor[0]))){
+					this.openCellsCellData[directionAndNeighbor[1].id].gList[index] = this.openCellsCellData[s.id].gList[index] + s.getMovementCost(directionAndNeighbor[0];
+					this.openCellsCellData[directionAndNeighbor[1].id].backPointerList[index] = s;
+					if (this.closedSetList[index].containsCell(directionAndNeighbor[1])){
+						this.openHeapList[index].push(directionAndNeighbor[1], this.key(directionAndNeighbor[1], index));
+					}
+				}
+			}
 
 	}
 	multiHeuristicSearch(){
@@ -214,17 +251,52 @@ export class Search {
 			this.openCellsCellData[this.goalCell.id] = goalCellData;
 
 			this.openHeapList[i].push(this.startCell, this.key(this.startCell, i));
-			
-			while (this.openHeapList[0].)
+
+			while (this.openHeapList[0].peekPriority() < Infinity){
 				for (let i = 1; i < 5; i++){
+					if (this.openHeapList[i].peekPriority() <= (2.0 * this.openHeapList[0].peekPriority())){
+						if (this.openCellsCellData[this.goalCell.id].gList[i] <= this.openHeapList[i].peekPriority()){
+							if (this.openCellsCellData[this.goalCell.id].gList[i] <= Infinity){
+								let currCell = this.goalCell;
+								const path: { [id: number]: Cell } = {};
+								while (currCell != this.startCell){
+									path[currCell.id] = currCell;
+									currCell = this.openCellsCellData[currCell.id].backPointerList[i];
+								}
+								return;
+							}
+						} else {
+							let currentCell = this.openHeapList[i].pop();
+							this.ExpandState(currentCell, i);
+							this.closedSetList[i].push(currentCell);
+						}
+					} else {
+						if (this.openCellsCellData[this.goalCell.id].gList[0] <= this.openHeapList[0].peekPriority())
+						{
+							if (this.openCellsCellData[this.goalCell.id].gList[0] <= Infinity){
+								let currCell = this.goalCell;
+								const path: { [id: number]: Cell } = {};
+								while (currCell != this.startCell){
+									path[currCell.id] = currCell;
+									currCell = this.openCellsCellData[currCell.id].backPointerList[0];
+								}
+								return;
+							}
+						} else {
+							let currentCell = this.openHeapList[0].pop();
+							this.ExpandState(currentCell, 0);
+							this.closedSetList[0].push(currentCell);
+						}
+					}
 				
 				
 				}
 
+			}
 
 
-			//retrieve cell
-			const fooCell = this.openCellsCellData[menubar.id];
+
+			
 			 
 
 
