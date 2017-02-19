@@ -24,7 +24,8 @@ export class SearchSelectorComponent implements OnInit {
         new SearchOption(SearchType.AStar, 'A*'),
         new SearchOption(SearchType.WeightedAStar, 'Weighted A*'),
         new SearchOption(SearchType.Uniformed, 'UCS'),
-        new SearchOption(SearchType.SequentialHeuristic, 'Sequential Heuristic')
+        new SearchOption(SearchType.SequentialHeuristic, 'Sequential Heuristic'),
+        new SearchOption(SearchType.IntegratedHeuristic, 'Integrated Heuristic')
     ];
 
     public selectedSearch: SearchSelectionModel
