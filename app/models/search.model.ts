@@ -14,7 +14,12 @@ export class CellSearchData {
 
     public visited =  false;
     public g = Infinity;
+	public gList = new Array<number>();
     public h = Infinity;
+	public hList = new Array<number>();
+	public backPointerList = new Array<Cell>();
+
+
     public weight = 1;
 
     public get f() {
@@ -63,6 +68,10 @@ export class Search {
 	private openHeap = new BinaryMinHeap<Cell>(cell => cell.id);
 
 	private weight: number;
+
+	private openHeapList: Array<BinaryMinHeap<Cell>>;
+	private closedSetList: Array<CellSet>;
+	private bestPath: Array<Cell>;
 	
     constructor(grid: Grid, start: Cell, goal: Cell) {
         this.grid = grid;
@@ -70,6 +79,11 @@ export class Search {
         this.goalCell = goal;
 		this.weight = 1.5;
 		this.expanded = 0;
+
+		this.openHeapList = new Array<BinaryMinHeap<Cell>>();
+		this.closedSetList = new Array<CellSet>();
+		this.bestPath = new Array<Cell>();
+	
     }
 
     initiateSearch(type: SearchType) {
@@ -171,4 +185,50 @@ export class Search {
         }
 		debugger;
     }
+
+	key(s:Cell, i:number){
+		const cellData = this.openCellsCellData[s.id];
+		return cellData.gList[i] + 1.5 * cellData.hList[i];
+		
+	}
+	ExpandState(s:Cell, i:number){
+
+	}
+	multiHeuristicSearch(){
+		for (let i = 0; i < 5; i++){
+		 	let heap = new BinaryMinHeap<Cell>(cell => cell.id);
+			this.openHeapList.push(heap);
+			
+			 let closeSet = new CellSet();
+			 this.closedSetList.push(closeSet);
+
+			 const startCellData = new CellSearchData();
+			startCellData.gList[i] = 0;
+			startCellData.backPointerList[i] = this.startCell;
+			
+			 const goalCellData = new CellSearchData();
+			goalCellData.gList[i] = 0;
+			goalCellData.backPointerList[i] = null;
+
+			this.openCellsCellData[this.startCell.id] = startCellData;
+			this.openCellsCellData[this.goalCell.id] = goalCellData;
+
+			this.openHeapList[i].push(this.startCell, this.key(this.startCell, i));
+			
+			while (this.openHeapList[0].)
+				for (let i = 1; i < 5; i++){
+				
+				
+				}
+
+
+
+			//retrieve cell
+			const fooCell = this.openCellsCellData[menubar.id];
+			 
+
+
+
+		}
+	}
 }
