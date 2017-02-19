@@ -21,11 +21,7 @@ export abstract class GridManager {
     public get grid() {
         return this._grid;
     }
-
-    public abstract get startCell(): Cell;
-
-    public abstract get goalCell(): Cell;
-
+    
     protected create() {
         this.createGrid();
         this.initializeGrid();
@@ -38,8 +34,10 @@ export abstract class GridManager {
         this._grid = new Grid([GridManager.gridLength, GridManager.gridWidth]);
     }
 
-    public serialize() {
-        let serializedData = this.serializeToCoordinate(this.startCell) + '\r\n' + this.serializeToCoordinate(this.goalCell) +'\r\n';
+    public abstract getStartAndGoalCellPair(): [Cell, Cell];
+
+    public serialize(startCell: Cell, goalCell: Cell) {
+        let serializedData = this.serializeToCoordinate(startCell) + '\r\n' + this.serializeToCoordinate(goalCell) +'\r\n';
 
         this.hardRegionCenters.forEach(coordinate => {
             serializedData += this.serializeToCoordinate(coordinate) + '\r\n';

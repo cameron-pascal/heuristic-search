@@ -19,8 +19,7 @@ export class CellSearchData {
 	public hList = new Array<number>();
 	public backPointerList = new Array<Cell>();
 
-
-    public weight = 1;
+	constructor( public readonly weight: number) { }
 
     public get f() {
         return this.g + (this.weight * this.h);
@@ -64,7 +63,7 @@ export class Search {
 
     private grid: Grid;
     private startCell: Cell;
-	private startCellData = new CellSearchData();
+	private startCellData: CellSearchData;
 
     private goalCell: Cell;
 
@@ -75,8 +74,6 @@ export class Search {
 
 	private openHeap = new BinaryMinHeap<Cell>(cell => cell.id);
 
-	private weight: number;
-
 	private openHeapList: Array<BinaryMinHeap<Cell>>;
 	private closedSetList: Array<CellSet>;
 	private bestPath: Array<Cell>;
@@ -85,7 +82,6 @@ export class Search {
         this.grid = grid;
         this.startCell = start;
         this.goalCell = goal;
-		this.weight = 1.5;
 		this.expanded = 0;
 
 		this.openHeapList = new Array<BinaryMinHeap<Cell>>();
@@ -94,20 +90,25 @@ export class Search {
 	
     }
 
-    initiateSearch(type: SearchType) {
+    initiateSearch(type: SearchType, weight: number) {
+		
+		if (type === SearchType.AStar) {
+			weight = 1;
+		}
+
+		this.startCellData = new CellSearchData(weight);
+		
 		this.openCellsCellData[this.startCell.id] = this.startCellData;
 
         this.startCellData.g = 0;
 
 		let startPriority = 0;
-		if (type === SearchType.AStar) {
+		if (type === SearchType.AStar || type === SearchType.WeightedAStar) {
 			startPriority = this.startCellData.f;
-		} else if (type === SearchType.Uniformed) {
+		} else {
 			startPriority = this.startCellData.g;
-		} else if (type == SearchType.WeightedAStar) {
-			this.startCellData.weight = this.weight;
-			startPriority = this.startCellData.f;
 		}
+
 		this.openHeap.push(this.startCell, startPriority);
 		const cameFrom: { [id: number]: Cell } = {};
 		const path: { [id: number]: Cell } = {};
@@ -128,10 +129,7 @@ export class Search {
 				const getCellData = function(cell: Cell) {
 					let data = self.openCellsCellData[cell.id]
 					if (!data) {
-						data = new CellSearchData();
-						if (type === SearchType.WeightedAStar) {
-							data.weight = self.weight;
-						}
+						data = new CellSearchData(weight);
 						data.h = self.grid.getChebyshevDistance(self.goalCell, cell);
 					}
 					return data;
@@ -170,7 +168,7 @@ export class Search {
 					
 					cameFrom[directionAndNeighbor[1].id] = currentCell;
 
-					const neighborCellData = new CellSearchData();
+					const neighborCellData = new CellSearchData(weight);
 					this.openCellsCellData[directionAndNeighbor[1].id] = neighborCellData;
 
 					neighborCellData.g = tentativeGCost;
@@ -178,13 +176,10 @@ export class Search {
 					
 					if (!cellData) {
 						let priority = 0;
-						if (type === SearchType.AStar) {
+						if (type === SearchType.AStar || type === SearchType.WeightedAStar) {
 							priority = neighborCellData.f;
-						} else if (type === SearchType.Uniformed) {
+						} else {
 							priority = neighborCellData.g;
-						} else if (type == SearchType.WeightedAStar) {
-							neighborCellData.weight = this.weight
-							priority = neighborCellData.f;
 						}
 						this.openHeap.push(directionAndNeighbor[1], priority)
 					} 
@@ -216,13 +211,14 @@ export class Search {
 				this.expanded = this.expanded + 1;
 				const a = this.openCellsCellData[directionAndNeighbor[1].id];
 				if (!a) {
-					const currCellData = new CellSearchData();
+					const currCellData = new CellSearchData(1);
 					currCellData.gList[index] = Infinity;
 					currCellData.backPointerList[index] = null;
 					this.openCellsCellData[directionAndNeighbor[1].id] = currCellData;
 				}
-				if (this.openCellsCellData[directionAndNeighbor[1].id].gList[index] > (this.openCellsCellData[s.id].gList[index] + s.getMovementCost(directionAndNeighbor[0]))){
-					this.openCellsCellData[directionAndNeighbor[1].id].gList[index] = this.openCellsCellData[s.id].gList[index] + s.getMovementCost(directionAndNeighbor[0];
+				if (this.openCellsCellData[directionAndNeighbor[1].id].gList[index] > (this.openCellsCellData[s.id].gList[index] + s.getMovementCost(directionAndNeighbor[0]))) {
+
+					this.openCellsCellData[directionAndNeighbor[1].id].gList[index] = this.openCellsCellData[s.id].gList[index] + s.getMovementCost(directionAndNeighbor[0]);
 					this.openCellsCellData[directionAndNeighbor[1].id].backPointerList[index] = s;
 					if (this.closedSetList[index].containsCell(directionAndNeighbor[1])){
 						this.openHeapList[index].push(directionAndNeighbor[1], this.key(directionAndNeighbor[1], index));
@@ -239,11 +235,11 @@ export class Search {
 			 let closeSet = new CellSet();
 			 this.closedSetList.push(closeSet);
 
-			 const startCellData = new CellSearchData();
+			 const startCellData = new CellSearchData(1);
 			startCellData.gList[i] = 0;
 			startCellData.backPointerList[i] = this.startCell;
 			
-			 const goalCellData = new CellSearchData();
+			 const goalCellData = new CellSearchData(1);
 			goalCellData.gList[i] = 0;
 			goalCellData.backPointerList[i] = null;
 

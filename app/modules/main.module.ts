@@ -10,6 +10,7 @@ import { IndexSelectorComponent } from '../components/indexSelector.component';
 import { RangeInputBoxComponent } from '../components/rangeInputBox.component';
 import { GridComponent } from '../components/grid.component';
 import { CellInfoComponent } from '../components/cellInfo.component';
+import { SearchSelectorComponent } from '../components/searchSelector.component';
 import { RotationDirective } from '../directives/rotationAngle.directive';
 import { SearchManagerService } from '../services/searchManager.service';
 
@@ -23,7 +24,7 @@ const routes: Routes = [
   providers: [SearchManagerService],
   imports: [ BrowserModule, FormsModule, RouterModule.forRoot(routes) ],
   exports: [ MainComponent ],
-  declarations: [ MainComponent, AppHostComponent, SplashComponent, ArrowButtonComponent, IndexSelectorComponent, CellInfoComponent, RangeInputBoxComponent, RotationDirective, GridComponent ],
+  declarations: [ MainComponent, AppHostComponent, SplashComponent, ArrowButtonComponent, IndexSelectorComponent, SearchSelectorComponent, CellInfoComponent, RangeInputBoxComponent, RotationDirective, GridComponent ],
   bootstrap: [AppHostComponent]
 })
 
