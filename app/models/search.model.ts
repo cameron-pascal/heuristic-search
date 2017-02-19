@@ -7,7 +7,8 @@ import { BinaryMinHeap} from './binaryMinHeap.model';
 export enum SearchType {
     AStar,
     WeightedAStar,
-    Uniformed
+    Uniformed,
+	SequentialHeuristic
 }
 
 export class CellSearchData {
