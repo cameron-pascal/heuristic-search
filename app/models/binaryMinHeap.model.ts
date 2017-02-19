@@ -32,6 +32,14 @@ export class BinaryMinHeap<T> {
         return false;
     }
 
+    public peekPriority() {
+        return this._nodes[0].priority;
+    }
+
+    public peek() {
+        return this._nodes[0].item;
+    }
+
     public pop() {
         const result = this._nodes[0];
         const largest = this._nodes.pop();
