@@ -12,17 +12,58 @@ export enum SearchType {
 	IntegratedHeuristic
 }
 
+
 export class CellSearchData {
 
-    public visited =  false;
-    public g = Infinity;
-    public h = Infinity;
+	private _g = Infinity;
+	private _h = Infinity;
+	private _weight = 1;
 
-	constructor( public readonly weight: number) { }
+	public set g(val: number) {
+		this._g = val;
+	}
+	public set h(val: number) {
+		this._h = val;
+	}
+
+	public  get g() {
+		return this._g;
+	}
+
+	public  get h() {
+		return this._h;
+	}
+
+	public  get f() {
+		return this._g + (this._weight * this._h);
+	}
+
+	constructor(weight?: number) {
+		if (weight) {
+			this._weight = weight;
+		}
+	}
+
+	public visited = false;
+}
+
+class MultiHeuristicCellSearchData extends CellSearchData {
+
+	public gList = new Array<number>();
+	public hList = new Array<number>();
+	public backPointerList = new Array<Cell>();
 
     public get f() {
-        return this.g + (this.weight * this.h);
+        return this.gList[0] + this.hList[0];
     }
+
+	public getHeuristics(grid: Grid, currentCell: Cell, endCell: Cell){
+		this.hList.push(grid.getChebyshevDistance(currentCell, endCell));
+		this.hList.push(grid.getEuclidianDistance(currentCell, endCell));
+		this.hList.push(Math.pow(grid.getEuclidianDistance(currentCell, endCell), 2));
+		this.hList.push(10);
+		this.hList.push(1000000);
+	}
 }
 
 export class SearchResult {
@@ -50,42 +91,42 @@ class CellSet {
 	}
 }
 
-export class Search {
+abstract class SearchRunner {
 
-    private grid: Grid;
-    private startCell: Cell;
+	protected expanded: number;
+	
+	public get expandedCells() {
+		return this.expanded;
+	}
+
+	constructor(protected readonly grid: Grid, protected readonly startCell: Cell, protected readonly goalCell: Cell) { }
+
+	public abstract runSearch(): SearchResult; 
+}
+
+class SingleHeuristicSearchRunner extends SearchRunner {
+
+	private closedSet = new CellSet();
+	private openCellsCellData: { [id: number] : CellSearchData } = {};
+	private openHeap = new BinaryMinHeap<Cell>(cell => cell.id);
 	private startCellData: CellSearchData;
 
-    private goalCell: Cell;
+	constructor(grid: Grid, startCell: Cell, goalCell: Cell, private readonly weight: number, private readonly type: SearchType) {
+		super(grid, startCell, goalCell);
+	}
 
-	expanded: number;
-	
-    private closedSet = new CellSet();
-	private openCellsCellData: { [id: number] : CellSearchData } = {};
+	runSearch() {
 
-	private openHeap = new BinaryMinHeap<Cell>(cell => cell.id);
-	
-    constructor(grid: Grid, start: Cell, goal: Cell) {
-        this.grid = grid;
-        this.startCell = start;
-        this.goalCell = goal;
-		this.expanded = 0;
-    }
-
-    initiateSearch(type: SearchType, weight: number) {
+		const hWeight = (this.type === SearchType.AStar) ? 1 : this.weight;
 		
-		if (type === SearchType.AStar) {
-			weight = 1;
-		}
-
-		this.startCellData = new CellSearchData(weight);
+		this.startCellData = new CellSearchData(hWeight);
 		
 		this.openCellsCellData[this.startCell.id] = this.startCellData;
 
         this.startCellData.g = 0;
 
 		let startPriority = 0;
-		if (type === SearchType.AStar || type === SearchType.WeightedAStar) {
+		if (this.type === SearchType.AStar || this.type === SearchType.WeightedAStar) {
 			startPriority = this.startCellData.f;
 		} else {
 			startPriority = this.startCellData.g;
@@ -111,7 +152,7 @@ export class Search {
 				const getCellData = function(cell: Cell) {
 					let data = self.openCellsCellData[cell.id]
 					if (!data) {
-						data = new CellSearchData(weight);
+						data = new CellSearchData(hWeight);
 						data.h = self.grid.getChebyshevDistance(self.goalCell, cell);
 					}
 					return data;
@@ -136,7 +177,7 @@ export class Search {
  
 			for (let i=0; i<neighbors.length; i++) {
 				const directionAndNeighbor = neighbors[i];
-				this.expanded = this.expanded + 1;
+				this.expanded++;
 
 				if (this.closedSet.containsCell(directionAndNeighbor[1])) {
 					continue;
@@ -150,7 +191,7 @@ export class Search {
 					
 					cameFrom[directionAndNeighbor[1].id] = currentCell;
 
-					const neighborCellData = new CellSearchData(weight);
+					const neighborCellData = new CellSearchData(hWeight);
 					this.openCellsCellData[directionAndNeighbor[1].id] = neighborCellData;
 
 					neighborCellData.g = tentativeGCost;
@@ -158,7 +199,7 @@ export class Search {
 					
 					if (!cellData) {
 						let priority = 0;
-						if (type === SearchType.AStar || type === SearchType.WeightedAStar) {
+						if (this.type === SearchType.AStar || this.type === SearchType.WeightedAStar) {
 							priority = neighborCellData.f;
 						} else {
 							priority = neighborCellData.g;
@@ -168,6 +209,166 @@ export class Search {
 				}
 			}
         }
-		debugger;
     }
+}
+
+class SequentialHeuristicSearchRunner extends SearchRunner {
+
+	private openHeapList = new Array<BinaryMinHeap<Cell>>();
+	private closedSetList = new Array<CellSet>();
+	private openCellsCellData: { [id: number] : MultiHeuristicCellSearchData } = {};
+
+	constructor(grid: Grid, startCell: Cell, goalCell: Cell) {
+		super(grid, startCell, goalCell);
+
+		for (let i=0; i<5; i++) {
+			this.openHeapList.push(new BinaryMinHeap<Cell>(cell => cell.id));
+			this.closedSetList.push(new CellSet());
+		}
+	}
+	
+	private key(s: Cell, index: number) {
+		const cellData = this.openCellsCellData[s.id];
+		cellData.getHeuristics(this.grid, s, this.goalCell);
+		return cellData.gList[index] + 1.5 * cellData.hList[index];
+	}
+
+	private expandState(s:Cell, index:number) {
+		const neighbors = new Array<[Direction, Cell]>();
+		const availableDirections = s.availableDirections;
+        
+		for (let i=0; i<availableDirections.length; i++){
+			const direction = availableDirections[i];
+			neighbors.push([direction, s.getNeigbor(direction)]);
+		}
+
+ 
+		for (let i=0; i<neighbors.length; i++) {
+			const directionAndNeighbor = neighbors[i];
+			this.expanded = this.expanded + 1;
+			const a = this.openCellsCellData[directionAndNeighbor[1].id];
+			
+			if (!a) {
+				const currCellData = new MultiHeuristicCellSearchData();
+				currCellData.gList[index] = Infinity;
+				currCellData.backPointerList[index] = null;
+				this.openCellsCellData[directionAndNeighbor[1].id] = currCellData;
+			}
+
+			if (this.openCellsCellData[directionAndNeighbor[1].id].gList[index] > (this.openCellsCellData[s.id].gList[index] + s.getMovementCost(directionAndNeighbor[0]))) {
+				this.openCellsCellData[directionAndNeighbor[1].id].gList[index] = this.openCellsCellData[s.id].gList[index] + s.getMovementCost(directionAndNeighbor[0]);
+				this.openCellsCellData[directionAndNeighbor[1].id].backPointerList[index] = s;
+				if (!this.closedSetList[index].containsCell(directionAndNeighbor[1])){
+					this.openHeapList[index].push(directionAndNeighbor[1], this.key(directionAndNeighbor[1], index));
+				}
+			}
+		}
+	}
+
+	public runSearch() {
+
+		for (let i = 0; i < 5; i++) {
+			const startCellData = new MultiHeuristicCellSearchData();
+			startCellData.gList[i] = 0;
+			startCellData.backPointerList[i] = this.startCell;
+			
+			const goalCellData = new MultiHeuristicCellSearchData();
+			goalCellData.gList[i] = Infinity;
+			goalCellData.backPointerList[i] = null;
+
+			this.openCellsCellData[this.startCell.id] = startCellData;
+			this.openCellsCellData[this.goalCell.id] = goalCellData;
+
+			this.openHeapList[i].push(this.startCell, this.key(this.startCell, i));
+
+			while (this.openHeapList[0].peekPriority() < Infinity) {
+				
+				for (let i = 1; i < 5; i++) {	
+					if (this.openHeapList[i].count > 0) {
+						
+						if (this.openHeapList[i].peekPriority() <= (2.0 * this.openHeapList[0].peekPriority())) {
+							
+							if (this.openCellsCellData[this.goalCell.id].gList[i] <= this.openHeapList[i].peekPriority()) {
+								
+								if (this.openCellsCellData[this.goalCell.id].gList[i] <= Infinity){
+									
+									let currCell = this.goalCell;
+									
+									const path: { [id: number]: Cell } = {};
+									
+									while (currCell != this.startCell) {
+										path[currCell.id] = currCell;
+										currCell = this.openCellsCellData[currCell.id].backPointerList[i];
+									}
+
+									const self = this;
+									const getCellData = function(cell: Cell) {
+										let data = self.openCellsCellData[cell.id]
+										
+										if (!data) {
+											data = new MultiHeuristicCellSearchData();
+											data.h = self.grid.getChebyshevDistance(self.goalCell, cell);
+										}
+
+										return data;
+									};
+									
+									const searchResult = new SearchResult(this.grid, path, [this.startCell, this.goalCell], this.expanded, getCellData);
+									return searchResult;
+								}
+							}
+						} else {
+							let currentCell = this.openHeapList[i].pop();
+							this.expandState(currentCell, i);
+							this.closedSetList[i].push(currentCell);
+						}
+					} else {
+						if (this.openHeapList[0].count > 0) {
+							if (this.openCellsCellData[this.goalCell.id].gList[0] <= this.openHeapList[0].peekPriority()) {
+								if (this.openCellsCellData[this.goalCell.id].gList[0] <= Infinity) {
+									let currCell = this.goalCell;
+									const path: { [id: number]: Cell } = {};
+									while (currCell != this.startCell){
+										path[currCell.id] = currCell;
+										currCell = this.openCellsCellData[currCell.id].backPointerList[0];
+									}
+									const self = this;
+									const getCellData = function(cell: Cell) {
+										let data = self.openCellsCellData[cell.id]
+										if (!data) {
+											data = new MultiHeuristicCellSearchData();
+											data.h = self.grid.getChebyshevDistance(self.goalCell, cell);
+										}
+										return data;
+									};
+									const searchResult = new SearchResult(this.grid, path, [this.startCell, this.goalCell], this.expanded, getCellData);
+									return searchResult;
+								}
+							} else {
+								let currentCell = this.openHeapList[0].pop();
+								this.expandState(currentCell, 0);
+								this.closedSetList[0].push(currentCell);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+
+
+export class Search {
+
+    constructor(private readonly grid: Grid, private readonly start: Cell, private readonly goal: Cell) { }
+
+	initiateSearch(type: SearchType, weight: number) {
+		
+		if (type === SearchType.SequentialHeuristic) {
+			return new SequentialHeuristicSearchRunner(this.grid, this.start, this.goal).runSearch();
+		}
+
+		return new SingleHeuristicSearchRunner(this.grid, this.start, this.goal, weight, type).runSearch();
+	}
 }
