@@ -15,7 +15,8 @@ export class CellSearchData {
     public visited =  false;
     public g = Infinity;
     public h = Infinity;
-    public weight = 1;
+
+	constructor( public readonly weight: number) { }
 
     public get f() {
         return this.g + (this.weight * this.h);
@@ -51,7 +52,7 @@ export class Search {
 
     private grid: Grid;
     private startCell: Cell;
-	private startCellData = new CellSearchData();
+	private startCellData: CellSearchData;
 
     private goalCell: Cell;
 
@@ -61,31 +62,33 @@ export class Search {
 	private openCellsCellData: { [id: number] : CellSearchData } = {};
 
 	private openHeap = new BinaryMinHeap<Cell>(cell => cell.id);
-
-	private weight: number;
 	
     constructor(grid: Grid, start: Cell, goal: Cell) {
         this.grid = grid;
         this.startCell = start;
         this.goalCell = goal;
-		this.weight = 1.5;
 		this.expanded = 0;
     }
 
-    initiateSearch(type: SearchType) {
+    initiateSearch(type: SearchType, weight: number) {
+		
+		if (type === SearchType.AStar) {
+			weight = 1;
+		}
+
+		this.startCellData = new CellSearchData(weight);
+		
 		this.openCellsCellData[this.startCell.id] = this.startCellData;
 
         this.startCellData.g = 0;
 
 		let startPriority = 0;
-		if (type === SearchType.AStar) {
+		if (type === SearchType.AStar || type === SearchType.WeightedAStar) {
 			startPriority = this.startCellData.f;
-		} else if (type === SearchType.Uniformed) {
+		} else {
 			startPriority = this.startCellData.g;
-		} else if (type == SearchType.WeightedAStar) {
-			this.startCellData.weight = this.weight;
-			startPriority = this.startCellData.f;
 		}
+
 		this.openHeap.push(this.startCell, startPriority);
 		const cameFrom: { [id: number]: Cell } = {};
 		const path: { [id: number]: Cell } = {};
@@ -106,10 +109,7 @@ export class Search {
 				const getCellData = function(cell: Cell) {
 					let data = self.openCellsCellData[cell.id]
 					if (!data) {
-						data = new CellSearchData();
-						if (type === SearchType.WeightedAStar) {
-							data.weight = self.weight;
-						}
+						data = new CellSearchData(weight);
 						data.h = self.grid.getChebyshevDistance(self.goalCell, cell);
 					}
 					return data;
@@ -148,7 +148,7 @@ export class Search {
 					
 					cameFrom[directionAndNeighbor[1].id] = currentCell;
 
-					const neighborCellData = new CellSearchData();
+					const neighborCellData = new CellSearchData(weight);
 					this.openCellsCellData[directionAndNeighbor[1].id] = neighborCellData;
 
 					neighborCellData.g = tentativeGCost;
@@ -156,13 +156,10 @@ export class Search {
 					
 					if (!cellData) {
 						let priority = 0;
-						if (type === SearchType.AStar) {
+						if (type === SearchType.AStar || type === SearchType.WeightedAStar) {
 							priority = neighborCellData.f;
-						} else if (type === SearchType.Uniformed) {
+						} else {
 							priority = neighborCellData.g;
-						} else if (type == SearchType.WeightedAStar) {
-							neighborCellData.weight = this.weight
-							priority = neighborCellData.f;
 						}
 						this.openHeap.push(directionAndNeighbor[1], priority)
 					} 

@@ -1,0 +1,11 @@
+<div *ngFor = "let searchOption of availableSearchOptions; let idx = index">
+    <label>
+        <input type="radio" name="searchOptions"
+               [checked] = "idx === 0"
+               (change) = "searchSelectionChanged(searchOption)"
+               [value] = "searchOption.value">
+        {{searchOption.display}}
+    </label>
+</div>
+<input *ngIf="showWeightBox" type="number" (change) = "updateWeight($event.target.value)" [value] = "selectedSearch.weight">
+<input type="button" value="Search" (click) = "runSearch()">

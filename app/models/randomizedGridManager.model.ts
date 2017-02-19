@@ -39,15 +39,6 @@ export class RandomizedGridManager extends GridManager {
 
     private availableStartAndGoalCellsMap: { [cellId: number]: Cell } = {};
     private availableStartAndGoalCells: Array<Cell>;
-    private currentStartAndGoalCells: [Cell, Cell];
-
-    public get startCell() {
-        return this.currentStartAndGoalCells[0];
-    }
-
-    public get goalCell() {
-        return this.currentStartAndGoalCells[1];
-    }
 
     constructor() {
         super();
@@ -62,7 +53,7 @@ export class RandomizedGridManager extends GridManager {
         this.availableStartAndGoalCells = this.setStartAndGoalCellsRegion();
     }
 
-    getNewStartAndGoalCells(): [Cell, Cell] {
+    getStartAndGoalCellPair(): [Cell, Cell] {
         Rng.shuffleArray(this.availableStartAndGoalCells);
 
         let startCell = this.availableStartAndGoalCells[0];
@@ -79,10 +70,8 @@ export class RandomizedGridManager extends GridManager {
                 break;
             }
         }
-
-        this.currentStartAndGoalCells = [startCell, goalCell];
         
-        return this.currentStartAndGoalCells;
+        return [startCell, goalCell];
     }
 
     private setStartAndGoalCellsRegion() {

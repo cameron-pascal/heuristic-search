@@ -9,18 +9,14 @@ export class SerializedGridManager extends GridManager {
 
     private readonly serializedData: Array<string>;
 
-    public get startCell() {
-        return this._startCell;
-    }
-
-    public get goalCell() {
-        return this._goalCell;
-    }
-
     constructor(data: string) {
         super();
         this.serializedData = data.split('\r\n');
         this.create();
+    }
+
+    public getStartAndGoalCellPair(): [Cell, Cell] {
+        return [this._startCell, this._goalCell];
     }
 
     protected createGrid() {
