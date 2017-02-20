@@ -29,6 +29,8 @@ export class SearchManagerService {
     }
 
     initializeWithGeneratedGrids() {
+        let date = new Date();
+        var currentTime = date.getTime();
         let avgLength = 0;
         let avgExpanded = 0;
         this._searchIndexMax  = (this.gridCount * this.searchesPerGrid) - 1;
@@ -39,15 +41,20 @@ export class SearchManagerService {
                 const startAndGoalPair = gridManager.getStartAndGoalCellPair();
                 this._startAndGoalPairs.push(startAndGoalPair);
                 const search = new Search(gridManager.grid, startAndGoalPair[0], startAndGoalPair[1]);
-                const result = search.initiateSearch(SearchType.AStar, 1);
-                 //avgLength = startAndGoalPair[1].g + avgLength;
+                const result = search.initiateSearch(SearchType.IntegratedHeuristic, 1);
                 avgExpanded = result.expanded + avgExpanded;
+                avgLength = result.length + avgLength;
 
                 this._searches.push(result);
             }
         }
         avgLength = avgLength / 50;
         avgExpanded = avgExpanded / 50;
+        var endDate = new Date();
+        var endTime = endDate.getTime();
+        console.log("Time to run " + (endTime-currentTime));
+        console.log("Expanded : " + avgExpanded);
+        console.log("Length : " + avgLength)
 
         this._currentGridManager = this._gridManagers[this.searchIndexStart];
         this._currentStartAndGoalPair = this._startAndGoalPairs[this.searchIndexStart];

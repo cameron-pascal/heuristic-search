@@ -76,7 +76,10 @@ export class Grid {
         const xDelta = Math.abs(x1 - x2);
         const yDelta = Math.abs(y1 - y2);
 
-        return Math.floor(Math.sqrt( (xDelta * xDelta) + (yDelta * yDelta) )); 
+        let heuristic = Math.floor(Math.sqrt( (xDelta * xDelta) + (yDelta * yDelta) ));
+        heuristic *= (1.0 + (0.25/160)); //Tie Breaker
+
+        return heuristic; 
     }
 
     getChebyshevDistance(a: Cell, b: Cell) { // [y, x]
@@ -91,8 +94,50 @@ export class Grid {
 
         const xDelta = Math.abs(x1 - x2);
         const yDelta = Math.abs(y1 - y2);
+
+        let heuristic = Math.floor(Math.max(xDelta, yDelta));
+        heuristic *= (1.0 + (0.25/160)); //Tie Breaker
         
-        return Math.floor(Math.max(xDelta, yDelta)); 
+        return heuristic;
+    }
+
+     getManhattanDistance(a: Cell, b: Cell) { // [y, x]
+        const aCoord = this.coordinateMap[a.id];
+        const bCoord = this.coordinateMap[b.id];
+
+        const x1 = aCoord[1];
+        const x2 = bCoord[1];
+
+        const y1 = aCoord[0];
+        const y2 = bCoord[0];
+
+        const xDelta = Math.abs(x1 - x2);
+        const yDelta = Math.abs(y1 - y2);
+        
+        let heuristic = Math.floor(xDelta + yDelta);
+        heuristic *= (1.0 + (0.25/160)); //Tie Breaker
+
+        return heuristic;
+    }
+
+
+     getOctileDistance(a: Cell, b: Cell) { // [y, x]
+        const aCoord = this.coordinateMap[a.id];
+        const bCoord = this.coordinateMap[b.id];
+
+        const x1 = aCoord[1];
+        const x2 = bCoord[1];
+
+        const y1 = aCoord[0];
+        const y2 = bCoord[0];
+
+        const xDelta = Math.abs(x1 - x2);
+        const yDelta = Math.abs(y1 - y2);
+
+        let heuristic = Math.floor(Math.max(xDelta, yDelta) + ( (Math.sqrt(2)-1) * Math.min(xDelta, yDelta)));
+        heuristic *= (1.0 + (0.25/160)); //Tie Breaker
+    
+        return heuristic; 
     }
 
     getAllCells() {
